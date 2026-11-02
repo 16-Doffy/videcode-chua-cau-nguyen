@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#080d1d"><meta name="description" content="Duy Giới — một nơi để thoát trận, thả điều ước và tìm chút bình yên trong thế giới neon.">
+<title>Duy Giới — Trạm nghỉ giữa vũ trụ</title>
+<link rel="stylesheet" href="./fonts/fonts.css"><link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div id="scene" aria-label="Ngôi đền neon ba chiều giữa không gian"></div>
+<div class="grain" aria-hidden="true"></div><div class="vignette" aria-hidden="true"></div>
+<header><a class="brand" href="./" aria-label="Duy Giới, trang chủ"><span class="sigil">D<span>◆</span></span><span>Duy Giới<small>Trạm nghỉ giữa vũ trụ</small></span></a><div class="top-actions"><button id="quality" class="quiet" title="Chuyển chất lượng hình ảnh">Hiệu ứng: đầy đủ</button><button id="sound" class="icon-btn" aria-pressed="false" aria-label="Bật âm thanh">♪<span>Âm thanh tắt</span></button></div></header>
+<main>
+<section class="intro" id="intro"><span class="intro-mark"><i></i> Một thế giới nhỏ của Duy</span><h1>Thoát trận.<br>Vào bình yên.</h1><p>Ngoài kia có thể hơi căng.<br>Ở đây, cứ chậm lại một nhịp.</p><button class="primary" id="enter">Bước vào Duy Giới <span>↗</span></button><div class="instructions">Kéo để nhìn quanh · Cuộn để đến gần</div></section>
+<aside class="realm-info"><span class="live-dot"></span><span id="realm-label">Điện Tĩnh Không</span><span class="divider"></span><span>Không cần đăng nhập</span></aside>
+<nav class="destinations" aria-label="Khám phá Duy Giới"><button class="destination active" data-view="temple" aria-pressed="true"><span class="nav-symbol">⌂</span><span>Chính điện<small>Một nhịp tĩnh</small></span></button><button class="destination" data-view="bell" aria-pressed="false"><span class="nav-symbol">♧</span><span>Chuông ngân<small>Buông điều nặng</small></span></button><button class="destination" data-view="lake" aria-pressed="false"><span class="nav-symbol">≈</span><span>Hồ ánh sáng<small>Gửi một điều ước</small></span></button></nav>
+<section class="interaction" id="interaction" aria-label="Tương tác với thế giới"><div class="interaction-heading"><span class="tiny-sigil">✧</span><span id="action-caption">Một ngọn đèn, một điều lành.</span></div><button id="action" class="action-btn"><span id="action-icon">✦</span><span id="action-label">Thắp một ngọn đèn</span><span class="action-arrow">↗</span></button><div class="progress"><span id="lamp-count">0</span> ngọn đèn bạn đã thắp <span class="stored">Lưu trên thiết bị này</span></div></section>
+<div class="hint" id="world-hint">Kéo để xoay góc nhìn</div>
+<section class="companion" id="companion" aria-label="Lời nhắn dành cho bạn" hidden>
+  <div class="companion-top"><span><i></i> Một chút ấm áp, gửi bạn</span><button id="fold-companion" aria-label="Thu gọn lời nhắn">−</button></div>
+  <div id="companion-content">
+    <div class="mood-heading">Hôm nay bạn thấy thế nào?</div><div id="moods" class="moods" role="group" aria-label="Chọn tâm trạng"></div>
+    <article class="blessing" id="blessing" aria-live="polite" aria-atomic="true"><div class="blessing-seal" aria-hidden="true">✧</div><span id="blessing-origin">Một lời chào từ Duy Giới</span><h2 id="blessing-title"></h2><p id="blessing-text"></p><div class="blessing-bottom"><span id="blessing-detail">Cứ đọc chậm thôi.</span><button id="save-message" aria-pressed="false">♡ Giữ lại</button></div></article>
+    <button class="another-note" id="another-note">Nhận một lời nhắn khác <span>✦</span></button>
+  </div>
+</section>
+<div class="ritual-tools" aria-label="Khoảng nghỉ của bạn"><button id="open-companion">✧ <span>Lời nhắn</span></button><button id="open-breath">◉ <span>Nghỉ một nhịp</span></button><button id="open-journal">♡ <span>Đã giữ</span><b id="saved-count">0</b></button></div>
+<div id="ritual-flash" aria-hidden="true"></div><div id="sky-message" aria-hidden="true"><span>✦</span><p></p></div>
+</main>
+<footer><span>Gác lại ồn ào. Giữ lại chính mình.</span><button id="help">Cách khám phá <span>?</span></button></footer>
+<div id="loading" role="status"><div class="loader-sigil">✧</div><strong>Đang mở cổng Duy Giới</strong><span>Để những ồn ào ở phía sau…</span><div class="loading-line"></div></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<dialog id="wish-dialog"><form id="wish-form"><button type="button" class="dialog-close" aria-label="Đóng">×</button><span class="dialog-symbol">✧</span><h2>Gửi vào ánh sáng</h2><p>Một điều bạn mong cho mình, hoặc cho ai đó.</p><label for="wish">Điều ước của bạn</label><textarea id="wish" maxlength="180" placeholder="Mong ngày mai nhẹ nhàng hơn một chút…" required></textarea><div class="form-note"><span>Chỉ lưu trên thiết bị của bạn.</span><span id="chars">0/180</span></div><button class="primary" type="submit">Thả đèn lên trời <span>↗</span></button><div id="past-wish"></div></form></dialog>
+<dialog id="help-dialog"><button type="button" class="dialog-close" aria-label="Đóng">×</button><span class="dialog-symbol">⌘</span><h2>Không có nhiệm vụ.<br>Chỉ cần có mặt.</h2><p>Kéo chuột hoặc vuốt màn hình để nhìn quanh. Cuộn hoặc dùng hai ngón tay để phóng to, thu nhỏ.</p><p>Chạm một chiếc đèn, chuông hoặc mặt hồ trong cảnh. Bạn cũng có thể chọn nơi ở cạnh trái rồi dùng nút tương tác.</p><p>Mỗi thao tác gửi bạn một lời nhắn. Chọn tâm trạng để nhận câu hợp với lúc này, nhấn “♡ Giữ lại” để đọc lại sau. Thu gọn bảng bằng nút “−” để ngắm cảnh.</p><p>Nhấn phím <kbd>1</kbd>, <kbd>2</kbd>, <kbd>3</kbd> để chuyển cảnh. Âm thanh chỉ bật khi bạn chọn.</p><button class="primary dialog-close-button">Mình hiểu rồi <span>✧</span></button></dialog>
+<dialog id="breath-dialog" class="breath-dialog"><button type="button" class="dialog-close" aria-label="Đóng">×</button><span class="breath-eyebrow">Dành một chút thời gian cho mình</span><h2>Một nhịp, ở đây.</h2><p>Cứ thở tự nhiên. Theo vòng sáng nếu thấy thoải mái, hoặc chỉ ngồi yên nghe chuông.</p><div id="breath-orb" class="breath-orb"><div class="orb-core"></div><span id="breath-cue">Sẵn sàng chưa?</span><small id="breath-time">Khoảng nghỉ 30 giây</small></div><button class="primary" id="start-breath">Bắt đầu khoảng nghỉ <span>◉</span></button><button id="stop-breath" class="text-button" hidden>Dừng ở đây cũng được</button></dialog>
+<dialog id="journal-dialog"><button type="button" class="dialog-close" aria-label="Đóng">×</button><span class="dialog-symbol">♡</span><h2>Những lời bạn giữ lại</h2><p>Một góc nhỏ để đọc lại khi cần. Chỉ lưu trên thiết bị này.</p><div id="saved-messages"></div></dialog>
+<script type="module" src="./app.js"></script>
+</body></html>

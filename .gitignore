@@ -1,0 +1,8 @@
+node_modules/
+.env
+.env.*
+*.log
+.openai/
+*.tar.gz
+playwright-report/
+test-results/
