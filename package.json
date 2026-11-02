@@ -1,0 +1,13 @@
+{
+  "name": "videcode-chua-cau-nguyen",
+  "version": "0.3.0",
+  "type": "module",
+  "private": true,
+  "description": "Duy Gioi — interactive 3D temple and reflective experiences",
+  "scripts": {
+    "start": "node serve.cjs",
+    "test": "node tests/core.mjs",
+    "deploy": "node deploy.cjs"
+  },
+  "engines": { "node": ">=22" }
+}

@@ -12,8 +12,13 @@ Không gian đền neon 3D của Duy, dành cho những khoảng nghỉ giữa m
 - Giữ câu thích để đọc lại; khoảng nghỉ 30 giây với vòng sáng có thể dừng bất cứ lúc nào.
 - Hỗ trợ điện thoại, bàn phím, chế độ hiệu ứng nhẹ và giảm chuyển động.
 - Font, Three.js và toàn bộ tài nguyên cần chạy được đóng gói trong repo.
+- Bốn chibi có animation, chọn bạn đồng hành khi vào và đổi tự do trong phiên.
+- Bản đồ chín điểm đến, gồm bốn khu cầu nguyện riêng, Vườn Tarot và Đài Hoàng Đạo.
+- Tarot 22 lá Ẩn chính, trải một/ba lá, lật bài, chủ đề và lưu lịch sử trên thiết bị. Mười hai cung có gợi ý theo ngày, không cần nhập ngày sinh.
 
-Điều ước, số đèn và câu đã giữ chỉ lưu trong trình duyệt trên thiết bị hiện tại. Không có tài khoản, chat nhiều người, máy chủ dữ liệu hoặc tính năng đoán vận mệnh.
+Nhân vật, điều ước, số đèn, câu đã giữ, cung đã chọn và trải bài chỉ lưu trong trình duyệt trên thiết bị hiện tại. Lời nguyện chỉ nhớ khi bạn chọn lưu. Không có tài khoản, chat nhiều người, máy chủ dữ liệu hoặc thanh toán. Tarot/hoàng đạo là nội dung giải trí và tự suy ngẫm.
+
+Xem [phạm vi, model tham khảo và các bước trước khi kinh doanh](./PRODUCT.md).
 
 ## Chạy local
 
@@ -24,6 +29,8 @@ node serve.cjs
 ```
 
 Mở http://localhost:4173. Kéo để xoay, cuộn hoặc chụm hai ngón để zoom; phím 1/2/3 chuyển khu vực. Âm thanh chỉ phát khi bạn bật nút ở góc trên.
+
+Chạy `node tests/core.mjs` để kiểm tra rig nhân vật, animation, dữ liệu và logic rút bài. Xem [kết quả và giới hạn kiểm tra](./QA.md).
 
 ## Deploy GitHub Pages
 
