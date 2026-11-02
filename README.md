@@ -18,6 +18,8 @@ Không gian đền neon 3D của Duy, dành cho những khoảng nghỉ giữa m
 
 Nhân vật, điều ước, số đèn, câu đã giữ, cung đã chọn và trải bài chỉ lưu trong trình duyệt trên thiết bị hiện tại. Lời nguyện chỉ nhớ khi bạn chọn lưu. Không có tài khoản, chat nhiều người, máy chủ dữ liệu hoặc thanh toán. Tarot/hoàng đạo là nội dung giải trí và tự suy ngẫm.
 
+Google Analytics chỉ tải khi người dùng đồng ý, có thể tắt trong “Dữ liệu & thống kê”. Không gửi nội dung nhập vào các sự kiện ứng dụng. Xem [cấu hình, sự kiện và link chiến dịch](./ANALYTICS.md).
+
 Xem [phạm vi, model tham khảo và các bước trước khi kinh doanh](./PRODUCT.md).
 
 ## Chạy local

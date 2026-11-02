@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {safeEvent,safeLocation,safeReferrer,validConsent,CONSENT_DAYS} from '../dist/analytics-policy.js';
+const original='https://16-doffy.github.io/videcode-chua-cau-nguyen/?utm_source=facebook&utm_medium=social&utm_campaign=beta_launch&utm_content=post_01&email=private%40example.com&wish=PRIVATE&fbclid=TRACK#PRIVATE';
+assert.equal(safeLocation(original),'https://16-doffy.github.io/videcode-chua-cau-nguyen/?utm_source=facebook&utm_medium=social&utm_campaign=beta_launch&utm_content=post_01');
+assert.equal(safeLocation('https://example.com/?utm_campaign=person_name&utm_source=email@example.com&utm_content=PRIVATE#secret'),'https://example.com/');
+assert.equal(safeReferrer('https://example.com/private?email=private#value'),'https://example.com/');
+assert.equal(safeReferrer('javascript:alert(1)'),'');
+assert.deepEqual(safeEvent('interaction_completed',{activity:'world',prayer:'SECRET',mood:'sad',sign:'aries'}),{name:'interaction_completed',params:{activity:'world'}});
+assert.equal(safeEvent('prayer_text',{text:'SECRET'}),null);
+assert.equal(safeEvent('feature_opened',{feature_name:'private-input'}),null);
+assert.deepEqual(safeEvent('app_error',{error_type:'script',message:'SECRET'}),{name:'app_error',params:{error_type:'script'}});
+assert.deepEqual(safeEvent('scene_ready',{load_bucket:'under_3s',url:'SECRET'}),{name:'scene_ready',params:{load_bucket:'under_3s'}});
+const now=Date.now();assert.equal(validConsent({version:1,state:'granted',updatedAt:now},now),'granted');
+assert.equal(validConsent({version:1,state:'denied',updatedAt:now},now),'denied');
+assert.equal(validConsent({version:1,state:'granted',updatedAt:now-CONSENT_DAYS*86400000},now),null);
+assert.equal(validConsent({version:1,state:'granted',updatedAt:now+5000},now),null);
+assert.equal(validConsent({version:1,state:'yes',updatedAt:now},now),null);
+console.log('Analytics policy checks passed: URL filtering, event allowlists, referrers and consent expiry.');

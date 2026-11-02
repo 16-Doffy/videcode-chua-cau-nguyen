@@ -19,7 +19,7 @@ Không tải trích xuất, không nhúng asset này và không đưa model đó
 
 ## Dữ liệu và giới hạn của bản đang chạy
 
-Toàn bộ trải nghiệm chạy ở trình duyệt. localStorage giữ nhân vật, số đèn, điều ước gần nhất, câu đã giữ, cung đã chọn và trải bài đã lưu. Lời nguyện chỉ được lưu khi người dùng đánh dấu muốn nhớ. Không có tài khoản, đồng bộ đa máy, xử lý thanh toán, cộng đồng hay backend. Không có theo dõi người dùng do dự án thêm vào.
+Toàn bộ trải nghiệm chạy ở trình duyệt. localStorage giữ nhân vật, số đèn, điều ước gần nhất, câu đã giữ, cung đã chọn và trải bài đã lưu. Lời nguyện chỉ được lưu khi người dùng đánh dấu muốn nhớ. Không có tài khoản, đồng bộ đa máy, xử lý thanh toán, cộng đồng hay backend. Google Analytics là tùy chọn sau khi người dùng đồng ý, có nút tắt; cấu hình, dữ liệu và giới hạn nằm trong ANALYTICS.md.
 
 Tarot và hoàng đạo là nội dung giải trí, tự suy ngẫm. Không đưa ra kết luận chắc chắn về tình cảm, sức khỏe hoặc tài chính, và không thu phí để “giải hạn” hay hứa biến điều ước thành thật.
 

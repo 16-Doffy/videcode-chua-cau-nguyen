@@ -6,7 +6,7 @@
   "description": "Duy Gioi — interactive 3D temple and reflective experiences",
   "scripts": {
     "start": "node serve.cjs",
-    "test": "node tests/core.mjs",
+    "test": "node tests/core.mjs && node tests/analytics.mjs",
     "deploy": "node deploy.cjs"
   },
   "engines": { "node": ">=22" }

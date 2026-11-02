@@ -20,3 +20,12 @@ Chạy kiểm tra logic bằng `node tests/core.mjs` hoặc `npm test`, không c
 ## Giới hạn bằng chứng
 
 Chưa đo FPS, bộ nhớ hoặc tải đồng thời trên thiết bị thật; chưa kiểm tra Safari/iPhone và Android thật; chưa thử với người dùng thật. Đây là bản trải nghiệm tĩnh, không phải hệ thống thương mại có tài khoản/thanh toán. Các phần đó được nêu trong PRODUCT.md.
+
+## Kiểm tra tích hợp thống kê
+
+- Policy unit tests: lọc query/hash, referrer chỉ còn origin, từ chối tên sự kiện/giá trị lạ, loại nội dung nhập khỏi tham số và kiểm tra hết hạn consent.
+- Browser consent tests với tag giả: không có request Google trước khi đồng ý; từ chối vẫn chơi được và được nhớ sau reload; đồng ý nạp đúng tag; có queue sự kiện mong đợi và không có chuỗi riêng tư thử nghiệm/cung cụ thể trong payload.
+- Tắt lại đặt cờ opt-out, tải lại không có tag và xóa cookie tiền tố `duygioi_ga`; consent hết hạn yêu cầu chọn lại. Dialog dữ liệu dùng được ở mobile và không tràn ngang.
+- Tag thật trên localhost: request collect trả HTTP 204, Measurement ID G-C8Q2YZW3GS, event page_view, URL đã lọc; cookie có tên duygioi_ga và duygioi_ga_C8Q2YZW3GS. Không có lỗi CSP trong lượt kết nối này. Localhost gửi debug_mode, không phải bằng chứng đã xem được báo cáo quản trị GA4.
+- Consent browser tests tạm dừng vòng vẽ trong tab thử để kiểm tra payload/giao diện; không dùng lượt này để kết luận về hiệu năng 3D.
+- Chưa xác nhận Enhanced measurement và custom dimensions trong tài khoản GA4; xem ANALYTICS.md để thiết lập báo cáo.
