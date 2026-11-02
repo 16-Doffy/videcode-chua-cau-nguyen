@@ -1,4 +1,4 @@
-# Duy Giới — bản trải nghiệm mở rộng
+# Third’s Hideaway — bản trải nghiệm mở rộng
 
 ## Phạm vi đã triển khai
 

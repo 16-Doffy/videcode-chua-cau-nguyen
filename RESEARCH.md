@@ -2,7 +2,7 @@
 
 Phạm vi: đọc sản phẩm và tài liệu công khai trên web. Chưa phỏng vấn hoặc làm usability test với người dùng thật. Không suy ra hiệu quả sức khỏe từ bản demo.
 
-| Nguồn | Quan sát | Áp dụng cho Duy Giới |
+| Nguồn | Quan sát | Áp dụng cho Third’s Hideaway |
 | --- | --- | --- |
 | [Plum Village: Bell of Mindfulness](https://web.plumvillage.app/mindfulness-bell) | Tiếng chuông gắn với lời mời dừng lại, chú ý hơi thở và hiện tại. | Sau khi gõ chuông, có lời mời buông vai, lắng nghe hoặc đặt xuống một điều; vòng sáng lan trong cảnh. |
 | [Calm: Breathing Exercises](https://support.calm.com/hc/en-us/articles/360000069973-Calm-Breathing-Exercises-How-to-Adjust-Speed-Timers-Haptics-Vibrations) | Vòng thở trực quan, điều chỉnh trải nghiệm, lưu mục muốn đọc lại. | Khoảng nghỉ tự chọn 30 giây với vòng sáng, có thể dừng bất cứ lúc nào; lưu lời nhắn yêu thích. Nhịp của demo do dự án tự chọn, không phải bài tập y khoa. |

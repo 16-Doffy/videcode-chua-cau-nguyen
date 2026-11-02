@@ -1,4 +1,4 @@
-# Thống kê Duy Giới
+# Thống kê Third’s Hideaway
 
 GA4 Measurement ID công khai: `G-C8Q2YZW3GS`. Không phải mật khẩu hay API secret.
 
@@ -7,7 +7,7 @@ GA4 Measurement ID công khai: `G-C8Q2YZW3GS`. Không phải mật khẩu hay AP
 - Lần đầu hỏi lựa chọn; chưa chọn hoặc từ chối thì không tải Google tag. Web vẫn dùng được.
 - Sau khi đồng ý mới tải `gtag.js` và gửi page view/sự kiện. Không lưu hàng đợi thao tác trước khi đồng ý để gửi bù.
 - Trạng thái cảnh đã sẵn sàng/thất bại được giữ trong bộ nhớ để báo trạng thái hiện tại sau khi đồng ý. Thời gian mở cảnh chỉ gửi theo ba khoảng, không gửi dữ liệu nhập.
-- Nhớ lựa chọn trên thiết bị tối đa 180 ngày, cookie Analytics cấu hình 30 ngày và đường dẫn riêng của Duy Giới.
+- Nhớ lựa chọn trên thiết bị tối đa 180 ngày, cookie Analytics cấu hình 30 ngày và đường dẫn riêng của Third’s Hideaway.
 - Nút “Dữ liệu & thống kê” ở chân trang cho phép đổi lựa chọn. Tắt đặt cờ opt-out ngay, xóa cookie có tiền tố riêng và tải lại trang để bỏ script đã nạp. Không xóa dữ liệu đã gửi trước đó khỏi Google.
 - Tắt Google Signals và ad personalization trong cấu hình. Ba loại consent quảng cáo đều `denied`. Không tích hợp Meta Pixel, TikTok Pixel hoặc session replay.
 

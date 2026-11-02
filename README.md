@@ -1,6 +1,6 @@
-# Duy Giới — Videcode chùa cầu nguyện
+# Third’s Hideaway — Videcode chùa cầu nguyện
 
-Không gian đền neon 3D của Duy, dành cho những khoảng nghỉ giữa một ngày nhiều tiếng ồn.
+Không gian đền neon 3D của Third, dành cho những khoảng nghỉ giữa một ngày nhiều tiếng ồn.
 
 **Chơi tại:** https://16-doffy.github.io/videcode-chua-cau-nguyen/
 
@@ -50,6 +50,6 @@ Script push nội dung `dist/` tới `gh-pages`; GitHub tự chạy lượt buil
 
 HTML/CSS, JavaScript modules, Three.js 0.169.0, Web Audio API, localStorage. Cảnh 3D được dựng từ hình học, không tải mô hình từ website khác.
 
-Ý tưởng tham khảo: [didenchua.online](https://didenchua.online/). Thiết kế, cảnh và lời nhắn của Duy Giới được viết riêng. Xem [khảo sát thiết kế](./RESEARCH.md).
+Ý tưởng tham khảo: [didenchua.online](https://didenchua.online/). Thiết kế, cảnh và lời nhắn của Third’s Hideaway được viết riêng. Xem [khảo sát thiết kế](./RESEARCH.md).
 
 Three.js dùng giấy phép MIT trong `dist/vendor/THREE-LICENSE.txt`. Font Be Vietnam Pro và Manrope dùng SIL OFL, kèm giấy phép trong `dist/fonts/`.
