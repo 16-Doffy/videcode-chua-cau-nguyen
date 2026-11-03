@@ -1,1 +1,53 @@
-{}
+{
+  "penguin": {
+    "file": "penguin.glb",
+    "height": 0.95,
+    "walk": "Walk",
+    "idle": "Iddle"
+  },
+  "zebra": {
+    "file": "zebra.glb",
+    "height": 1.75,
+    "walk": "Take 001_3",
+    "idle": "Take 001_2"
+  },
+  "redpanda": {
+    "file": "redpanda.glb",
+    "height": 0.45,
+    "walk": "Armature|ArmatureAction"
+  },
+  "giraffe": {
+    "file": "giraffe.glb",
+    "height": 4.2,
+    "idle": "Giraffe ArmatureAction"
+  },
+  "bear": {
+    "file": "bear.glb",
+    "height": 1.6,
+    "idle": "metarig|metarigAction"
+  },
+  "lion": {
+    "file": "lion.glb",
+    "height": 1.5,
+    "walk": [
+      10.8,
+      12
+    ],
+    "idle": [
+      0,
+      1.5
+    ]
+  },
+  "panda": {
+    "file": "panda.glb",
+    "height": 1.25,
+    "idle": "Take 001"
+  },
+  "elephant": {
+    "file": "elephant.glb",
+    "height": 2.3,
+    "walk": "Elephant_Walk",
+    "idle": "Elephant_Idle",
+    "hideMaterial": "ring_nofade_ADD"
+  }
+}

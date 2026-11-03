@@ -94,3 +94,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--sun); outline-o
   .toasts { bottom: auto; top: 110px; }
 }
 @media (prefers-reduced-motion: reduce) { .coin, .ring { animation: none; } .toast { transition: none; } }
+/* Admin mode: a tag by the name so a test save is never mistaken for a real one. */
+.admin-tag { display: none; margin-left: 8px; padding: 2px 8px; border-radius: 4px; background: #f2b134; color: #2b1d00; font-size: 12px; font-weight: 800; vertical-align: middle; }
+body.admin .admin-tag { display: inline-block; }
+@media (max-width: 720px) { body.admin .brand { display: block; font-size: 0; } body.admin .admin-tag { font-size: 11px; margin: 0; } }

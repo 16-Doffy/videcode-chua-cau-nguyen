@@ -2,11 +2,14 @@
 import * as THREE from '../vendor/three.module.min.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
 import { START_MONEY, DAY_SECONDS, TICKET, BIOMES, SPECIES, SPECIES_BY_ID, PLOT_SIZE, PLOTS, plotPrice, CARE, GATE, RING } from './data.js';
-import { makeAnimal, loadManifest, acacia, bamboo, pine, rock, iceBlock, pool, person, toyBall, mat } from './models3d.js';
+import { makeAnimal, loadManifest, preload, acacia, bamboo, pine, rock, iceBlock, pool, person, toyBall, mat } from './models3d.js';
 
 const $ = (s) => document.querySelector(s);
-const SAVE_KEY = 'thirds-zoo-v1';
+// Admin mode (zoo/?admin) tests the game with everything free and every species open, on its own save.
+const ADMIN = new URLSearchParams(location.search).has('admin');
+const SAVE_KEY = ADMIN ? 'thirds-zoo-admin-v1' : 'thirds-zoo-v1';
 const money = (n) => `${Math.round(n).toLocaleString('vi-VN')} xu`;
+const price = (n) => (ADMIN ? 'Miễn phí' : money(n));
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const store = {
   get() { try { return JSON.parse(localStorage.getItem(SAVE_KEY)); } catch { return null; } },
@@ -121,7 +124,7 @@ function buildPlot(i) {
   if (!st.owned) {
     const lawn = new THREE.Mesh(new THREE.BoxGeometry(PLOT_SIZE, 0.05, PLOT_SIZE), mat(0x92cc6c)); lawn.position.y = 0.03; lawn.receiveShadow = true; g.add(lawn);
     for (const [x, z] of [[half, half], [-half, half], [half, -half], [-half, -half]]) { const post = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.9, 0.25), mat(0xf2f2f2)); post.position.set(x, 0.45, z); post.castShadow = true; g.add(post); }
-    const sign = label('Khu đất trống', '#14202b', 'rgba(255,255,255,0.94)', 34, `Mua: ${money(plotPrice(ownedCount()))}`);
+    const sign = label('Khu đất trống', '#14202b', 'rgba(255,255,255,0.94)', 34, ADMIN ? 'Miễn phí' : `Mua: ${money(plotPrice(ownedCount()))}`);
     sign.scale.setScalar(3.2); sign.position.set(0, 2.2, 0); sign.rotation.x = -0.75; g.add(sign); view.sign = sign;
     return;
   }
@@ -273,13 +276,13 @@ function newDay() {
       }
     }
   });
-  if (upkeep) { state.money -= upkeep; toast(`Ngày ${day()} — chi phí nuôi thú: ${money(upkeep)}.`); }
+  if (upkeep && !ADMIN) { state.money -= upkeep; toast(`Ngày ${day()} — chi phí nuôi thú: ${money(upkeep)}.`); }
   renderPanel();
 }
 const day = () => Math.floor(state.time / DAY_SECONDS) + 1;
 
 // ---------- Actions ----------
-function spend(cost) { if (state.money < cost) { toast(`Không đủ xu: cần ${money(cost)}.`, 'warn'); return false; } state.money -= cost; return true; }
+function spend(cost) { if (ADMIN) return true; if (state.money < cost) { toast(`Không đủ xu: cần ${money(cost)}.`, 'warn'); return false; } state.money -= cost; return true; }
 function buyPlot(i, biome) {
   const cost = plotPrice(ownedCount());
   if (!spend(cost)) return;
@@ -289,7 +292,7 @@ function buyPlot(i, biome) {
 }
 function buyAnimal(i, sid) {
   const sp = SPECIES_BY_ID[sid];
-  if (Math.floor(stars()) < sp.unlock && state.bestStars < sp.unlock) { toast(`Cần ${sp.unlock} sao để mua ${sp.name}.`, 'warn'); return; }
+  if (!ADMIN && Math.floor(stars()) < sp.unlock && state.bestStars < sp.unlock) { toast(`Cần ${sp.unlock} sao để mua ${sp.name}.`, 'warn'); return; }
   if (!spend(sp.price)) return;
   const a = { id: state.nextId++, species: sid, food: 90, happy: 70, age: 3, baby: false };
   state.plots[i].animals.push(a); spawnAnimalView(i, a);
@@ -329,7 +332,7 @@ function renderPanel() {
     panel.innerHTML = `<header><div><small>Khu ${i + 1} · 12 × 12</small><h2>Khu đất trống</h2></div><button class="x" data-close aria-label="Đóng">×</button></header>
       <p class="lead">Chọn môi trường sống cho khu này. Mỗi loài thú hợp với một môi trường.</p>
       <div class="biomes">${Object.entries(BIOMES).map(([id, b]) => `<button data-biome="${id}"><span class="chip" style="background:#${b.ground.toString(16).padStart(6, '0')}"></span><b>${b.name}</b><small>${b.note}</small><em>${SPECIES.filter((s) => s.biome === id).map((s) => s.name).join(', ')}</em></button>`).join('')}</div>
-      <p class="cost">Giá khu đất: <b>${money(cost)}</b>${state.money < cost ? ' · <span class="warn">chưa đủ xu</span>' : ''}</p>`;
+      <p class="cost">Giá khu đất: <b>${price(cost)}</b>${!ADMIN && state.money < cost ? ' · <span class="warn">chưa đủ xu</span>' : ''}</p>`;
     return;
   }
   const b = BIOMES[p.biome]; const n = p.animals.length;
@@ -338,13 +341,13 @@ function renderPanel() {
   panel.innerHTML = `<header><div><small>Khu ${i + 1} · ${b.name}</small><h2>${n ? `${n} con thú` : 'Chưa có thú'}</h2></div><button class="x" data-close aria-label="Đóng">×</button></header>
     <div class="row"><span>Độ sạch</span>${bar(p.clean)}<b>${Math.round(p.clean)}%</b></div>
     <div class="care">
-      <button data-care="feed" ${n ? '' : 'disabled'}>Cho ăn<small>${money(CARE.feed.cost * n)}</small></button>
-      <button data-care="clean">Dọn chuồng<small>${money(CARE.clean.cost)}</small></button>
-      <button data-care="toy" ${isToyActive(p) ? 'class="on"' : ''}>${isToyActive(p) ? 'Đang chơi' : 'Đồ chơi'}<small>${money(CARE.toy.cost)}</small></button>
+      <button data-care="feed" ${n ? '' : 'disabled'}>Cho ăn<small>${price(CARE.feed.cost * n)}</small></button>
+      <button data-care="clean">Dọn chuồng<small>${price(CARE.clean.cost)}</small></button>
+      <button data-care="toy" ${isToyActive(p) ? 'class="on"' : ''}>${isToyActive(p) ? 'Đang chơi' : 'Đồ chơi'}<small>${price(CARE.toy.cost)}</small></button>
     </div>
     ${n ? `<ul class="animals">${p.animals.map((a) => { const sp = SPECIES_BY_ID[a.species]; const g = groupScore(counts[a.species], sp.group); return `<li><div><b>${sp.name}${a.baby ? ' <em class="baby">bé</em>' : ''}</b><small>${g < 1 ? (counts[a.species] < sp.group[0] ? `cô đơn, thích ${sp.group[0]}–${sp.group[1]} con` : 'quá đông') : 'vui với bầy'}</small></div><div class="meters"><span>Ăn</span>${bar(a.food)}<span>Vui</span>${bar(a.happy)}</div><button class="ghost" data-release="${a.id}" title="Chuyển sang vườn khác, nhận lại 50%">Chuyển đi</button></li>`; }).join('')}</ul>` : '<p class="lead">Khu này còn trống. Chọn một loài bên dưới để mua.</p>'}
     <h3>Thêm thú</h3>
-    <ul class="shop">${SPECIES.filter((sp) => sp.biome === p.biome).map((sp) => { const locked = s < sp.unlock; return `<li class="${locked ? 'locked' : ''}"><div><b>${sp.name}</b><small>${sp.blurb} Thích ${sp.group[0]}–${sp.group[1]} con.</small></div><button data-buy="${sp.id}" ${locked ? 'disabled' : ''}>${locked ? `Cần ${sp.unlock} sao` : money(sp.price)}</button></li>`; }).join('')}</ul>`;
+    <ul class="shop">${SPECIES.filter((sp) => sp.biome === p.biome).map((sp) => { const locked = !ADMIN && s < sp.unlock; return `<li class="${locked ? 'locked' : ''}"><div><b>${sp.name}</b><small>${sp.blurb} Thích ${sp.group[0]}–${sp.group[1]} con.</small></div><button data-buy="${sp.id}" ${locked ? 'disabled' : ''}>${locked ? `Cần ${sp.unlock} sao` : price(sp.price)}</button></li>`; }).join('')}</ul>`;
 }
 panel.addEventListener('click', (e) => {
   const t = e.target.closest('button'); if (!t || selected === null) return;
@@ -357,8 +360,8 @@ panel.addEventListener('click', (e) => {
 
 function renderHud() {
   const s = stars();
-  $('#money').textContent = money(state.money);
-  $('#money').classList.toggle('neg', state.money < 0);
+  $('#money').textContent = ADMIN ? 'Vô hạn' : money(state.money);
+  $('#money').classList.toggle('neg', !ADMIN && state.money < 0);
   $('#guests').textContent = Math.round(state.guests).toLocaleString('vi-VN');
   $('#day').textContent = `Ngày ${day()}`;
   $('#stars').innerHTML = [1, 2, 3, 4, 5].map((k) => `<i class="${s >= k ? 'on' : s >= k - 0.5 ? 'half' : ''}">★</i>`).join('');
@@ -372,6 +375,7 @@ $('#reset').addEventListener('click', () => {
 });
 $('#tips-close').addEventListener('click', () => { $('#tips').hidden = true; state.seenTips = true; save(); });
 if (state.seenTips) $('#tips').hidden = true;
+if (ADMIN) { document.body.classList.add('admin'); $('#admin-exit').hidden = false; }
 
 const toasts = $('#toasts');
 function toast(text, kind = '') { const el = document.createElement('div'); el.className = `toast ${kind}`; el.textContent = text; toasts.prepend(el); setTimeout(() => el.classList.add('out'), 4200); setTimeout(() => el.remove(), 4800); while (toasts.children.length > 4) toasts.lastChild.remove(); }
@@ -418,6 +422,8 @@ function frame() {
   const phase = (state.time % DAY_SECONDS) / DAY_SECONDS; const light = 0.75 + Math.sin(phase * Math.PI) * 0.45;
   sun.intensity = 1.0 + light * 0.6; hemi.intensity = 0.65 + light * 0.4;
   jet.scale.y = 0.9 + Math.sin(performance.now() / 300) * 0.1;
+  // Fog starts past the island however far the camera stands (a phone screen puts it farther back).
+  const camDist = camera.position.distanceTo(controls.target); scene.fog.near = camDist + 20; scene.fog.far = camDist * 1.4 + 90;
   hudAcc += dt;
   if (hudAcc > 0.25) {
     hudAcc = 0; renderHud();
@@ -433,10 +439,16 @@ window.__zoo = {
     const v = new THREE.Vector3(PLOTS[i].x, 0.2, PLOTS[i].z).project(camera); const r = renderer.domElement.getBoundingClientRect();
     return { x: r.left + ((v.x + 1) / 2) * r.width, y: r.top + ((1 - v.y) / 2) * r.height };
   },
+  // Each animal's species and its size on screen in world units, to check the models fit.
+  animals() { return plotViews.flatMap((v) => v.animals.map((a) => { const b = new THREE.Box3().setFromObject(a.model.group, true); const s = b.getSize(new THREE.Vector3()); return { species: a.a.species, kids: a.model.group.children.length, size: s.toArray().map((x) => +x.toFixed(2)), y: +b.min.y.toFixed(2) }; })); },
+  focus(i, dist = 16) { controls.target.set(PLOTS[i].x, 1, PLOTS[i].z); camera.position.set(PLOTS[i].x + dist * 0.5, dist * 0.55, PLOTS[i].z + dist); controls.update(); },
 };
 
 (async () => {
   await loadManifest();
+  // Animals already in the zoo load before the first frame, so no stand-in shape flashes; the rest load behind.
+  await preload([...new Set(state.plots.flatMap((p) => (p.owned ? p.animals.map((a) => a.species) : [])))]);
+  preload(SPECIES.map((sp) => sp.id));
   state.plots.forEach((p, i) => { buildPlot(i); if (p.owned) p.animals.forEach((a) => spawnAnimalView(i, a)); });
   resize(); renderHud(); frame();
   $('#loading').classList.add('hide');
