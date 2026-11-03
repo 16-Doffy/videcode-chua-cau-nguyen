@@ -1,5 +1,5 @@
-// Animals and scenery. Each species has a low-poly model built from shapes, so the zoo works with no download;
-// a species listed in models/manifest.json is drawn from its .glb instead (with its own animation).
+// Animals and scenery. Each species listed in models/manifest.json is drawn from its .glb with its own animation;
+// the low-poly shape models stand in for a species with no .glb, or when one fails to load.
 import * as THREE from '../vendor/three.module.min.js';
 import { GLTFLoader } from './vendor/GLTFLoader.js';
 import { clone as cloneSkinned } from './vendor/SkeletonUtils.js';
@@ -89,7 +89,10 @@ const BUILDERS = {
     extras: (g, h) => { h.add(at(box(0.22, 0.16, 0.2, 0xb08a64), 0, -0.08, 0.38)); for (const x of [1, -1]) h.add(at(sphere(0.1, 0x6b4527), x * 0.22, 0.28, -0.08)); } }),
 };
 
-// Models that exist as .glb, read once from models/manifest.json: { "lion": { "file": "lion.glb", "scale": 1, "rotY": 0 } }.
+// Models that exist as .glb, read once from models/manifest.json. An entry:
+//   { "file": "lion.glb", "height": 1.4, "walk": "Walk" | [from, to], "idle": "Idle" | [from, to], "hideMaterial": "ring", "rotY": 0 }
+// A clip given as [from, to] is that stretch, in seconds, of the file's first clip (some models pack every move in one).
+// With no walk clip the idle keeps playing and the body bobs as it moves; with no idle the walk pauses when it stops.
 let manifest = {};
 const gltfCache = new Map();
 const loader = new GLTFLoader();
@@ -101,22 +104,52 @@ function loadGltf(id) {
   if (!gltfCache.has(id)) gltfCache.set(id, new Promise((resolve) => loader.load(`./models/${manifest[id].file}`, resolve, undefined, () => resolve(null))));
   return gltfCache.get(id);
 }
+/** Starts loading these species' models; resolves when they are in (or failed, then the shape model stands in). */
+export function preload(ids) { return Promise.all(ids.filter((id) => manifest[id]).map(loadGltf)); }
+/** The box around a model as it is posed now, skinned meshes included. */
+function poseBox(obj) {
+  obj.updateMatrixWorld(true);
+  obj.traverse((o) => { if (o.isSkinnedMesh) o.skeleton.update(); });
+  return new THREE.Box3().setFromObject(obj, true);
+}
+const sizeOf = (obj) => poseBox(obj).getSize(new THREE.Vector3());
+const clipCache = new Map();
+function clipFor(id, gltf, want) {
+  if (!want) return null;
+  const key = `${id}:${want}`;
+  if (!clipCache.has(key)) {
+    clipCache.set(key, Array.isArray(want)
+      ? THREE.AnimationUtils.subclip(gltf.animations[0], key, Math.round(want[0] * 30), Math.round(want[1] * 30), 30)
+      : gltf.animations.find((a) => a.name === want) || null);
+  }
+  return clipCache.get(key);
+}
 
 /**
- * An animal ready to place: { group, update(dt, moving), height }. The shape model comes back at once; if a .glb
- * exists it replaces the shape inside the same group as soon as it has loaded.
+ * An animal ready to place: { group, update(dt, moving) }. A species with a .glb shows it once loaded (at once if
+ * preloaded); the shape model is drawn only when there is no .glb or it failed to load.
  */
 export function makeAnimal(speciesId, size = 1) {
   const built = BUILDERS[speciesId]();
   const holder = new THREE.Group();
-  holder.add(built.group);
   holder.scale.setScalar(size);
-  let mixer = null; let phase = Math.random() * 6;
+  let phase = Math.random() * 6;
+  let real = null; // { model, gait, mixer, walk, idle, moving }
   const api = {
     group: holder,
     update(dt, moving) {
       phase += dt * (moving ? 9 : 2);
-      if (mixer) { mixer.update(dt * (moving ? 1 : 0.4)); return; }
+      if (real) {
+        if (moving !== real.moving) {
+          real.moving = moving;
+          if (real.walk && real.idle) { const to = moving ? real.walk : real.idle; const from = moving ? real.idle : real.walk; to.reset().play(); from.crossFadeTo(to, 0.25, false); }
+          else if (real.walk) real.walk.paused = !moving;
+        }
+        real.mixer?.update(dt);
+        // No walk clip: a small bob and rock so it does not slide like a statue.
+        if (!real.walk) { real.gait.position.y = moving ? Math.abs(Math.sin(phase)) * 0.05 : 0; real.gait.rotation.x = moving ? Math.sin(phase) * 0.03 : 0; }
+        return;
+      }
       const swing = moving ? Math.sin(phase) * 0.55 : 0;
       built.legs.forEach((l, i) => { l.rotation.x = (i % 2 === (i < 2 ? 0 : 1) ? swing : -swing); });
       if (built.waddle) built.group.rotation.z = moving ? Math.sin(phase) * 0.12 : 0;
@@ -126,25 +159,40 @@ export function makeAnimal(speciesId, size = 1) {
     },
   };
   const spec = manifest[speciesId];
-  if (spec) {
-    loadGltf(speciesId).then((gltf) => {
-      if (!gltf) return;
-      const model = cloneSkinned(gltf.scene);
-      model.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
-      // Fit to the same height as the shape model, standing on the ground.
-      const bb = new THREE.Box3().setFromObject(built.group); const target = bb.max.y - bb.min.y || 1;
-      const mb = new THREE.Box3().setFromObject(model); const h = mb.max.y - mb.min.y || 1;
-      model.scale.setScalar((target / h) * (spec.scale ?? 1));
-      const mb2 = new THREE.Box3().setFromObject(model); model.position.y -= mb2.min.y;
-      model.rotation.y = spec.rotY ?? 0;
-      holder.remove(built.group); holder.add(model);
-      if (gltf.animations?.length) {
-        mixer = new THREE.AnimationMixer(model);
-        const clip = gltf.animations.find((a) => new RegExp(spec.clip || 'walk|run|idle', 'i').test(a.name)) || gltf.animations[0];
-        mixer.clipAction(clip).play();
-      }
+  if (!spec) { holder.add(built.group); return api; }
+  const useShape = () => { if (!built.group.parent) holder.add(built.group); };
+  loadGltf(speciesId).then((gltf) => {
+    if (!gltf) { useShape(); return; }
+    const model = cloneSkinned(gltf.scene);
+    const drop = [];
+    model.traverse((o) => {
+      if (!o.isMesh) return;
+      if (spec.hideMaterial && o.material?.name === spec.hideMaterial) { drop.push(o); return; }
+      o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false; // skinned parts move outside their rest bounds
     });
-  }
+    drop.forEach((o) => o.parent.remove(o));
+    model.rotation.y = spec.rotY ?? 0;
+    const gait = new THREE.Group(); gait.add(model);
+    real = { model, gait, mixer: null, walk: null, idle: null, moving: false };
+    if (gltf.animations?.length) {
+      real.mixer = new THREE.AnimationMixer(model);
+      const walk = clipFor(speciesId, gltf, spec.walk); const idle = clipFor(speciesId, gltf, spec.idle);
+      if (walk) real.walk = real.mixer.clipAction(walk);
+      if (idle) real.idle = real.mixer.clipAction(idle);
+      const first = real.idle || real.walk;
+      if (first) first.play();
+      real.mixer.update(0);
+      if (first) first.time = Math.random() * first.getClip().duration;
+      if (real.walk && !real.idle) real.walk.paused = true;
+    }
+    // Fit to the species' height, centred on the spot, feet on the ground. Measured in the clip's pose, not the
+    // rest pose: some rigs are scaled by their animation.
+    const k = (spec.height ?? sizeOf(built.group).y) / (sizeOf(gait).y || 1);
+    model.scale.multiplyScalar(k);
+    const fit = poseBox(gait); const c = fit.getCenter(new THREE.Vector3());
+    model.position.x -= c.x; model.position.z -= c.z; model.position.y -= fit.min.y;
+    holder.add(gait);
+  });
   return api;
 }
 

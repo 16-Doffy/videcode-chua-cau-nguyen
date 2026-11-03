@@ -9,7 +9,7 @@ Không gian đền neon 3D của Third, dành cho những khoảng nghỉ giữa
 Trang gốc là thư viện kiểu Steam: mỗi trò một ô, bấm để chơi.
 
 - **Chùa cầu nguyện** (`chua.html`): ngôi đền neon bên dưới.
-- **Third’s Zoo** (`zoo/`): xây vườn thú 3D. Mua đất, chọn môi trường sống, mua thú, cho ăn, dọn chuồng, tặng đồ chơi; thú vui thì khách đông và có thể sinh con; sao đánh giá mở khóa loài mới. Thú được dựng bằng hình khối; một loài có file `.glb` khai trong `zoo/models/manifest.json` thì dùng mô hình đó. Chạy thử: `node tests/zoo-play.cjs` khi `node serve.cjs` đang chạy.
+- **Third’s Zoo** (`zoo/`): xây vườn thú 3D. Mua đất, chọn môi trường sống, mua thú, cho ăn, dọn chuồng, tặng đồ chơi; thú vui thì khách đông và có thể sinh con; sao đánh giá mở khóa loài mới. Tám loài dùng mô hình 3D từ Sketchfab (CC BY 4.0, ghi nguồn ở `zoo/credits.html`); `zoo/models/manifest.json` khai file, chiều cao và đoạn cử động đi bộ/đứng yên của từng loài. Loài nào thiếu file thì hiện mô hình hình khối. Chế độ admin `zoo/?admin`: mọi thứ miễn phí, mở hết loài, lưu riêng không đụng tiến trình thật. Chạy thử khi `node serve.cjs` đang chạy: `node tests/zoo-play.cjs`, `node tests/zoo-admin.cjs`; xem mô hình và cử động: `node tests/model-inspect.cjs`, `node tests/model-clips.cjs <loài>`.
 
 ## Có gì trong thế giới này?
 
