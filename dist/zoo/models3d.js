@@ -224,10 +224,77 @@ export function pool(w, d, color) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, 0.08, d), new THREE.MeshStandardMaterial({ color, roughness: 0.15, metalness: 0.1, transparent: true, opacity: 0.88 }));
   m.position.y = 0.06; m.receiveShadow = true; return m;
 }
-export function person(color) {
+/** A guest, or (with a cap colour) a member of staff in uniform. */
+export function person(color, cap) {
   const g = new THREE.Group();
   g.add(at(cyl(0.18, 0.22, 0.7, color, 6), 0, 0.55, 0));
   g.add(at(sphere(0.17, 0xf0c9a0), 0, 1.05, 0));
+  if (cap) { g.add(at(cyl(0.19, 0.19, 0.1, cap, 8), 0, 1.2, 0)); g.add(at(box(0.2, 0.03, 0.16, cap), 0, 1.16, 0.16)); }
   return g;
 }
-export function toyBall() { return at(sphere(0.3, 0xe94b5b, 8), 0, 0.3, 0); }
+export function toyBall(color = 0xe94b5b, r = 0.3) { return at(sphere(r, color, 8), 0, r, 0); }
+
+/** A habitat item, sized to its footprint of w × d cells (one cell is one unit), centred on its group. */
+export function itemModel(type, biome, waterColor, w = 1, d = 1) {
+  const g = new THREE.Group();
+  if (type === 'pool') { const p = pool(w - 0.1, d - 0.1, waterColor); g.add(p); g.add(at(box(w, 0.05, d, 0x8d7a5a), 0, 0.02, 0)); }
+  if (type === 'mud') { const m = at(cyl(0.95, 0.95, 0.06, 0x6b4a2b, 10), 0, 0.05, 0); m.scale.set(w / 2, 1, d / 2); g.add(m); }
+  if (type === 'plant') {
+    const t = { savanna: acacia, bamboo, forest: pine, polar: iceBlock }[biome]();
+    t.scale.setScalar(biome === 'savanna' ? 0.7 : biome === 'polar' ? 0.7 : 0.85); t.rotation.y = Math.random() * 6; g.add(t);
+  }
+  if (type === 'rock') { const r = rock(biome === 'polar' ? 0xc9d6df : 0x8b8f93, 1.2); g.add(r); }
+  if (type === 'ball') g.add(toyBall(0xe94b5b, 0.32));
+  if (type === 'hayball') g.add(toyBall(0xe0c060, 0.34));
+  if (type === 'icetreat') {
+    const ice = at(box(0.6, 0.6, 0.6, 0xd9eef8), 0, 0.3, 0); ice.material = new THREE.MeshStandardMaterial({ color: 0xcfe8f5, roughness: 0.1, transparent: true, opacity: 0.7 }); g.add(ice);
+    g.add(at(box(0.32, 0.12, 0.08, 0xf08a3c), 0, 0.3, 0));
+  }
+  if (type === 'scratch') { g.add(at(cyl(0.12, 0.14, 1.4, 0x8a5a32, 8), 0, 0.7, 0)); g.add(at(cyl(0.16, 0.16, 0.7, 0xc9a66b, 8), 0, 0.7, 0)); g.add(at(box(0.6, 0.08, 0.6, 0x6b4a2b), 0, 0.04, 0)); }
+  if (type === 'feeder') {
+    g.add(at(cyl(0.07, 0.08, 3.2, 0x6b4a2b, 6), 0, 1.6, 0));
+    const basket = at(cyl(0.32, 0.22, 0.35, 0x9a7b3c, 8), 0, 3.1, 0); g.add(basket); g.add(at(sphere(0.3, 0x5f9a35), 0, 3.35, 0));
+  }
+  if (type === 'climb') {
+    for (const [x, z] of [[-0.8, -0.8], [0.8, -0.8], [-0.8, 0.8], [0.8, 0.8]]) g.add(at(cyl(0.08, 0.09, 2.2, 0x7a5232, 6), x, 1.1, z));
+    g.add(at(box(1.8, 0.1, 1.8, 0x9a6b41), 0, 1.5, 0));
+    for (let k = 0; k < 4; k++) { const rung = at(cyl(0.04, 0.04, 1.6, 0x9a6b41, 5), 0.8, 0.3 + k * 0.32, 0); rung.rotation.x = Math.PI / 2; g.add(rung); }
+    const log = at(cyl(0.12, 0.12, 2.2, 0x7a5232, 6), -0.1, 1.0, 0); log.rotation.z = 0.9; g.add(log);
+  }
+  if (type === 'shelter') {
+    g.add(at(box(1.8, 1.2, 1.6, 0xb08a5a), 0, 0.6, -0.1));
+    g.add(at(box(0.7, 0.9, 0.05, 0x3b2a1c), 0, 0.45, 0.71));
+    const roof = at(new THREE.Mesh(new THREE.ConeGeometry(1.5, 0.8, 4), mat(0x6b4a2b)), 0, 1.6, -0.1); roof.rotation.y = Math.PI / 4; g.add(roof);
+  }
+  return g;
+}
+
+/** A guest facility on its spot beside the path, about 2 × 2. */
+export function facilityModel(type, color = 0x888888) {
+  const g = new THREE.Group();
+  if (type === 'food' || type === 'drink' || type === 'gift') {
+    g.add(at(box(1.8, 1.3, 1.4, 0xf5ecd8), 0, 0.65, 0));
+    g.add(at(box(1.9, 0.12, 0.5, 0xd9cfb8), 0, 0.85, 0.85));
+    const roof = at(box(2.2, 0.16, 1.9, color), 0, 1.55, 0.1); g.add(roof);
+    for (let k = -2; k <= 2; k++) g.add(at(box(0.22, 0.25, 0.04, k % 2 ? 0xffffff : color), k * 0.44, 1.38, 1.05));
+    g.add(at(type === 'drink' ? cyl(0.18, 0.18, 0.5, 0x3a7bd5, 8) : type === 'gift' ? box(0.4, 0.4, 0.4, 0xf2b134) : sphere(0.25, 0xf2b134), 0, 1.95, 0.1));
+  }
+  if (type === 'toilet') {
+    g.add(at(box(1.8, 1.6, 1.4, 0xdfe7ee), 0, 0.8, 0));
+    g.add(at(box(0.5, 1.0, 0.05, 0x3a7bd5), -0.45, 0.5, 0.71)); g.add(at(box(0.5, 1.0, 0.05, 0xe06c9f), 0.45, 0.5, 0.71));
+    g.add(at(box(2.0, 0.14, 1.6, 0x56606a), 0, 1.66, 0));
+  }
+  if (type === 'bench') {
+    for (const x of [-0.5, 0.5]) { g.add(at(box(0.9, 0.08, 0.4, 0x9a6b41), x, 0.45, 0)); g.add(at(box(0.9, 0.35, 0.06, 0x9a6b41), x, 0.65, -0.2)); g.add(at(box(0.06, 0.45, 0.35, 0x56606a), x - 0.4, 0.22, 0)); g.add(at(box(0.06, 0.45, 0.35, 0x56606a), x + 0.4, 0.22, 0)); }
+  }
+  if (type === 'bin') { g.add(at(cyl(0.25, 0.22, 0.7, 0x2f6b3a, 10), 0, 0.35, 0)); g.add(at(cyl(0.27, 0.27, 0.06, 0x1f4a28, 10), 0, 0.72, 0)); }
+  return g;
+}
+
+/** An education board on two posts. */
+export function boardModel() {
+  const g = new THREE.Group();
+  for (const x of [-0.7, 0.7]) g.add(at(cyl(0.05, 0.05, 1.4, 0x6b4a2b, 6), x, 0.7, 0));
+  g.add(at(box(1.7, 0.9, 0.08, 0x2f6b3a), 0, 1.2, 0)); g.add(at(box(1.5, 0.7, 0.02, 0xf5ecd8), 0, 1.2, 0.05));
+  return g;
+}
