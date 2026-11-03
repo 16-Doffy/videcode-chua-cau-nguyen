@@ -1,49 +1,61 @@
 <!doctype html>
 <html lang="vi">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com; font-src 'self'; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com; object-src 'none'; base-uri 'self'; form-action 'none'; frame-src 'none'; worker-src 'none'; upgrade-insecure-requests">
-<meta name="theme-color" content="#080d1d"><meta name="description" content="Third’s Hideaway — một nơi để thoát trận, thả điều ước và tìm chút bình yên trong thế giới neon.">
-<title>Third’s Hideaway — Một hành trình, một khoảng bình yên</title>
-<link rel="stylesheet" href="./fonts/fonts.css"><link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./journeys.css"><link rel="stylesheet" href="./analytics.css">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-src 'none'">
+<meta name="theme-color" content="#171a21">
+<meta name="description" content="Third’s Hideaway — thư viện trò chơi nhỏ chạy ngay trên trình duyệt: chùa cầu nguyện neon, vườn thú 3D và hơn thế nữa.">
+<title>Third’s Hideaway — Thư viện trò chơi</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="./fonts/fonts.css"><link rel="stylesheet" href="./hub/hub.css">
 </head>
 <body>
-<div id="scene" aria-label="Ngôi đền neon ba chiều giữa không gian"></div>
-<div class="grain" aria-hidden="true"></div><div class="vignette" aria-hidden="true"></div>
-<header><a class="brand" href="./" aria-label="Third’s Hideaway, trang chủ"><span class="sigil">T<span>◆</span></span><span>Third’s Hideaway<small>Trạm nghỉ giữa vũ trụ</small></span></a><div class="top-actions"><button id="quality" class="quiet" title="Chuyển chất lượng hình ảnh">Hiệu ứng: đầy đủ</button><button id="sound" class="icon-btn" aria-pressed="false" aria-label="Bật âm thanh">♪<span>Âm thanh tắt</span></button></div></header>
+<header class="top">
+  <a class="logo" href="./"><span class="mark">T◆</span>THIRD’S HIDEAWAY</a>
+  <nav aria-label="Mục chính"><a href="#featured" aria-current="page">NỔI BẬT</a><a href="#library">THƯ VIỆN</a><a href="#about">GIỚI THIỆU</a></nav>
+</header>
+
 <main>
-<section class="intro" id="intro"><span class="intro-mark"><i></i> Một thế giới nhỏ của Third</span><h1>Thoát trận.<br>Vào bình yên.</h1><p>Chọn một người bạn nhỏ. Ghé một ngôi chùa.<br>Để lại ồn ào, mang theo một chút an yên.</p><button class="primary" id="enter">Chọn bạn đồng hành <span>↗</span></button><div class="instructions">9 điểm khám phá · Chibi tương tác · Tarot & chòm sao</div></section>
-<aside class="realm-info"><span class="live-dot"></span><span id="realm-label">Điện Tĩnh Không</span><span class="divider"></span><span>Không cần đăng nhập</span></aside>
-<nav class="destinations" aria-label="Khám phá Third’s Hideaway"><button class="destination active" data-view="temple" aria-pressed="true"><span class="nav-symbol">⌂</span><span>Chính điện<small>Một nhịp tĩnh</small></span></button><button class="destination" data-view="bell" aria-pressed="false"><span class="nav-symbol">♧</span><span>Chuông ngân<small>Buông điều nặng</small></span></button><button class="destination" data-view="lake" aria-pressed="false"><span class="nav-symbol">≈</span><span>Hồ ánh sáng<small>Gửi một điều ước</small></span></button></nav>
-<section class="interaction" id="interaction" aria-label="Tương tác với thế giới"><div class="interaction-heading"><span class="tiny-sigil">✧</span><span id="action-caption">Một ngọn đèn, một điều lành.</span></div><button id="action" class="action-btn"><span id="action-icon">✦</span><span id="action-label">Thắp một ngọn đèn</span><span class="action-arrow">↗</span></button><div class="progress"><span id="lamp-count">0</span> ngọn đèn bạn đã thắp <span class="stored">Lưu trên thiết bị này</span></div></section>
-<div class="hint" id="world-hint">Kéo để xoay góc nhìn</div>
-<section class="companion" id="companion" aria-label="Lời nhắn dành cho bạn" hidden>
-  <div class="companion-top"><span><i></i> Một chút ấm áp, gửi bạn</span><button id="fold-companion" aria-label="Thu gọn lời nhắn">−</button></div>
-  <div id="companion-content">
-    <div class="mood-heading">Hôm nay bạn thấy thế nào?</div><div id="moods" class="moods" role="group" aria-label="Chọn tâm trạng"></div>
-    <article class="blessing" id="blessing" aria-live="polite" aria-atomic="true"><div class="blessing-seal" aria-hidden="true">✧</div><span id="blessing-origin">Một lời chào từ Third’s Hideaway</span><h2 id="blessing-title"></h2><p id="blessing-text"></p><div class="blessing-bottom"><span id="blessing-detail">Cứ đọc chậm thôi.</span><button id="save-message" aria-pressed="false">♡ Giữ lại</button></div></article>
-    <button class="another-note" id="another-note">Nhận một lời nhắn khác <span>✦</span></button>
-  </div>
-</section>
-<div class="ritual-tools" aria-label="Khoảng nghỉ của bạn"><button id="open-companion">✧ <span>Lời nhắn</span></button><button id="open-breath">◉ <span>Nghỉ một nhịp</span></button><button id="open-journal">♡ <span>Đã giữ</span><b id="saved-count">0</b></button></div>
-<div id="ritual-flash" aria-hidden="true"></div><div id="sky-message" aria-hidden="true"><span>✦</span><p></p></div>
-<nav class="expedition-nav" aria-label="Khám phá thế giới"><button id="open-map"><span>⌘</span> Bản đồ<span class="nav-badge">9 nơi</span></button><button id="open-tarot"><span>✦</span> Tarot</button><button id="open-zodiac"><span>☼</span> Hoàng đạo</button></nav>
-<section class="avatar-hud" id="avatar-hud" aria-label="Bạn đồng hành"><div id="avatar-mini"></div><div><strong id="avatar-name">Mây</strong><span id="avatar-status" role="status" aria-live="polite">Sẵn sàng khám phá</span></div><div class="avatar-emotes"><button data-emote="bow" title="Cúi chào" aria-label="Nhân vật cúi chào">☺</button><button data-emote="pray" title="Chắp tay" aria-label="Nhân vật chắp tay">✧</button><button id="change-character" title="Đổi nhân vật" aria-label="Đổi bạn đồng hành">⇄</button></div></section>
+  <section id="featured" class="featured" aria-label="Trò chơi nổi bật">
+    <h1 class="sr-only">Third’s Hideaway — thư viện trò chơi</h1>
+    <a class="hero" href="./zoo/">
+      <img src="./hub/covers/zoo.jpg" alt="Một vườn thú ba chiều với gấu trúc, voi, hươu cao cổ, chim cánh cụt và khách tham quan">
+      <div class="hero-info">
+        <span class="badge">MỚI</span>
+        <h2>Third’s Zoo</h2>
+        <p>Mua đất, chọn môi trường sống, đón voi, gấu trúc, sư tử về chăm. Thú vui thì khách đông, đủ sao thì mở khóa loài mới.</p>
+        <ul class="tags"><li>Mô phỏng</li><li>Xây dựng</li><li>Thú cưng</li><li>3D</li></ul>
+        <span class="play">Chơi ngay</span>
+      </div>
+    </a>
+  </section>
+
+  <section id="library" class="library" aria-labelledby="lib-title">
+    <div class="section-head"><h2 id="lib-title">Thư viện</h2><p>Bấm vào một trò để chơi. Không cần tải, không cần đăng nhập.</p></div>
+    <div class="grid">
+      <a class="card" href="./zoo/">
+        <div class="cover"><img src="./hub/covers/zoo.jpg" alt="" loading="lazy"><span class="badge">MỚI</span></div>
+        <div class="body"><h3>Third’s Zoo</h3><p>Xây và chăm một vườn thú 3D: 8 loài, 4 môi trường sống, thú có thể sinh con.</p><ul class="tags"><li>Mô phỏng</li><li>Thú cưng</li></ul></div>
+        <span class="cta">Chơi</span>
+      </a>
+      <a class="card" href="./chua.html">
+        <div class="cover"><img src="./hub/covers/chua.jpg" alt="" loading="lazy"></div>
+        <div class="body"><h3>Chùa cầu nguyện</h3><p>Ngôi đền neon giữa không gian: thắp đèn, gõ chuông, thả điều ước, rút Tarot và xem cung hoàng đạo.</p><ul class="tags"><li>Thư giãn</li><li>Chữa lành</li></ul></div>
+        <span class="cta">Chơi</span>
+      </a>
+      <div class="card soon" aria-label="Trò chơi tiếp theo sắp ra mắt">
+        <div class="cover"><span class="soon-mark">?</span></div>
+        <div class="body"><h3>Sắp ra mắt</h3><p>Trò tiếp theo đang được làm. Quay lại sau nhé.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="about" class="about">
+    <h2>Giới thiệu</h2>
+    <p>Third’s Hideaway là góc nghỉ nhỏ trên mạng: những trò chơi ngắn, nhẹ nhàng, chạy ngay trên điện thoại và máy tính. Tiến trình chơi chỉ lưu trên thiết bị của bạn.</p>
+  </section>
 </main>
-<footer><span>Gác lại ồn ào. Giữ lại chính mình.</span><div class="footer-links"><button id="privacy-open">Dữ liệu & thống kê</button><button id="help">Cách khám phá <span>?</span></button></div></footer>
-<aside id="analytics-banner" class="analytics-banner" aria-label="Lựa chọn thống kê"><strong>Giúp Third’s Hideaway tốt hơn một chút?</strong><p>Nếu bạn đồng ý, Google Analytics đo lượt truy cập, thiết bị và thao tác trải nghiệm. Không gửi lời nguyện, điều ước hay nội dung bạn nhập. Từ chối vẫn chơi đầy đủ.</p><div class="analytics-choices"><button id="analytics-reject">Không bật</button><button id="analytics-accept">Bật thống kê</button></div><button id="analytics-details">Xem dữ liệu được sử dụng</button></aside>
-<dialog id="privacy-dialog" aria-labelledby="privacy-title"><button type="button" class="dialog-close" aria-label="Đóng">×</button><h2 id="privacy-title">Dữ liệu của bạn</h2><p class="privacy-updated">Cập nhật: 02/11/2026</p><h3>Những gì ở lại trên thiết bị</h3><p>Nhân vật, số đèn, điều ước gần nhất, câu đã giữ, cung đã chọn và trải bài lưu trong bộ nhớ trình duyệt. Lời nguyện chỉ được nhớ khi bạn chọn lưu. Các nội dung này không được dự án gửi tới Google Analytics.</p><h3>Thống kê là lựa chọn của bạn</h3><p>Khi bật, Google Analytics 4 nhận lượt mở trang, trạng thái tải cảnh, bắt đầu trải nghiệm, mở tính năng, hoàn tất hoạt động và loại lỗi kỹ thuật. Dữ liệu kỹ thuật có thể gồm cookie định danh trình duyệt, thiết bị, trình duyệt, thời gian và vị trí ước tính do Google xử lý. Đây không phải thống kê ẩn danh tuyệt đối.</p><p>Dự án không gửi tên, email, nội dung điều ước/lời nguyện, tâm trạng, cung cụ thể, lá bài hay nội dung nhập tự do vào các sự kiện thống kê. Không bật Google Signals hoặc cá nhân hóa quảng cáo trong mã tích hợp.</p><p>Chỉ các nhãn chiến dịch được cho phép từ Facebook, Instagram, TikTok và YouTube được giữ cho báo cáo nguồn truy cập. Các tham số URL khác được bỏ trước khi tải Analytics.</p><h3>Đổi lựa chọn bất cứ lúc nào</h3><p>Lựa chọn được nhớ tối đa 180 ngày. Cookie Analytics của cấu hình này có thời hạn 30 ngày và chỉ dành cho đường dẫn Third’s Hideaway. Tắt thống kê sẽ dừng gửi sự kiện mới, xóa cookie thống kê của cấu hình này và tải lại trang nếu Analytics đã chạy. Dữ liệu đã gửi trước đó không tự bị xóa khỏi báo cáo.</p><p id="analytics-status" role="status"></p><div class="analytics-choices"><button id="analytics-deny">Tắt thống kê</button><button id="analytics-grant">Bật thống kê</button></div><p class="privacy-provider">Nhà cung cấp thống kê: Google Analytics. Dịch vụ lưu trữ: GitHub Pages. Máy chủ cung cấp các dịch vụ vẫn có thể xử lý dữ liệu truy cập kỹ thuật theo chính sách của họ. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Chính sách Google</a> · <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener noreferrer">Chính sách GitHub</a></p></dialog>
-<div id="loading" role="status"><div class="loader-sigil">✧</div><strong>Đang mở cổng Third’s Hideaway</strong><span>Để những ồn ào ở phía sau…</span><div class="loading-line"></div></div>
-<div id="toast" role="status" aria-live="polite"></div>
-<dialog id="wish-dialog"><form id="wish-form"><button type="button" class="dialog-close" aria-label="Đóng">×</button><span class="dialog-symbol">✧</span><h2>Gửi vào ánh sáng</h2><p>Một điều bạn mong cho mình, hoặc cho ai đó.</p><label for="wish">Điều ước của bạn</label><textarea id="wish" maxlength="180" placeholder="Mong ngày mai nhẹ nhàng hơn một chút…" required></textarea><div class="form-note"><span>Chỉ lưu trên thiết bị của bạn.</span><span id="chars">0/180</span></div><button class="primary" type="submit">Thả đèn lên trời <span>↗</span></button><div id="past-wish"></div></form></dialog>
-<dialog id="help-dialog"><button type="button" class="dialog-close" aria-label="Đóng">×</button><span class="dialog-symbol">⌘</span><h2>Không có nhiệm vụ.<br>Chỉ cần có mặt.</h2><p>Kéo chuột hoặc vuốt màn hình để nhìn quanh. Cuộn hoặc dùng hai ngón tay để phóng to, thu nhỏ.</p><p>Chạm một chiếc đèn, chuông hoặc mặt hồ trong cảnh. Bạn cũng có thể chọn nơi ở cạnh trái rồi dùng nút tương tác.</p><p>Mỗi thao tác gửi bạn một lời nhắn. Chọn tâm trạng để nhận câu hợp với lúc này, nhấn “♡ Giữ lại” để đọc lại sau. Thu gọn bảng bằng nút “−” để ngắm cảnh.</p><p>Nhấn phím <kbd>1</kbd>, <kbd>2</kbd>, <kbd>3</kbd> để chuyển cảnh. Âm thanh chỉ bật khi bạn chọn.</p><button class="primary dialog-close-button">Mình hiểu rồi <span>✧</span></button></dialog>
-<dialog id="breath-dialog" class="breath-dialog"><button type="button" class="dialog-close" aria-label="Đóng">×</button><span class="breath-eyebrow">Dành một chút thời gian cho mình</span><h2>Một nhịp, ở đây.</h2><p>Cứ thở tự nhiên. Theo vòng sáng nếu thấy thoải mái, hoặc chỉ ngồi yên nghe chuông.</p><div id="breath-orb" class="breath-orb"><div class="orb-core"></div><span id="breath-cue">Sẵn sàng chưa?</span><small id="breath-time">Khoảng nghỉ 30 giây</small></div><button class="primary" id="start-breath">Bắt đầu khoảng nghỉ <span>◉</span></button><button id="stop-breath" class="text-button" hidden>Dừng ở đây cũng được</button></dialog>
-<dialog id="journal-dialog"><button type="button" class="dialog-close" aria-label="Đóng">×</button><span class="dialog-symbol">♡</span><h2>Những lời bạn giữ lại</h2><p>Một góc nhỏ để đọc lại khi cần. Chỉ lưu trên thiết bị này.</p><div id="saved-messages"></div></dialog>
-<dialog id="character-dialog" class="wide-dialog character-dialog"><button type="button" class="dialog-close" aria-label="Đóng">×</button><div class="dialog-kicker">Hành trình bắt đầu từ một người bạn</div><h2>Hôm nay, ai sẽ đi cùng bạn?</h2><p>Mỗi người một sắc màu. Cùng bạn đi dạo, chắp tay, gõ chuông và thả những chiếc đèn.</p><div id="character-options" class="character-options" role="group" aria-label="Chọn bạn đồng hành"></div><div class="character-confirm"><span id="character-chosen"></span><button class="primary" id="confirm-character">Cùng nhau bước vào <span>↗</span></button></div><small class="local-note">Chọn và đổi tự do. Nhân vật được nhớ trên thiết bị này.</small></dialog>
-<dialog id="map-dialog" class="wide-dialog map-dialog"><button type="button" class="dialog-close" aria-label="Đóng">×</button><div class="dialog-kicker">Mỗi nơi, một nhịp riêng</div><h2>Bạn muốn ghé đâu?</h2><p>Bốn ngôi chùa cho những lời nguyện riêng. Một khu vườn cho điều muốn hiểu về mình.</p><div id="realm-map" class="realm-map"></div><div class="local-note">Tên các khu là hư cấu trong Third’s Hideaway. Tarot và hoàng đạo thuộc khu khám phá giải trí riêng.</div></dialog>
-<dialog id="prayer-dialog" class="prayer-dialog"><button type="button" class="dialog-close" aria-label="Đóng">×</button><span class="dialog-symbol" id="prayer-symbol">✧</span><h2 id="prayer-name">Chùa An Nhiên</h2><p id="prayer-prompt"></p><form id="prayer-form"><label for="prayer-text">Một lời nguyện của bạn <span class="optional">· có thể để trống</span></label><textarea id="prayer-text" maxlength="180" placeholder="Mong mình và những người thương được bình an…"></textarea><div class="form-note"><span>Không gửi tới người khác.</span><span id="prayer-chars">0/180</span></div><label class="checkbox-line"><input type="checkbox" id="save-prayer"> Nhớ lời nguyện trên thiết bị này</label><button class="primary" type="submit">Chắp tay gửi lời nguyện <span>✧</span></button></form><section id="prayer-result" hidden aria-live="polite"><div class="prayer-orbit" aria-hidden="true">✧</div><blockquote id="prayer-echo"></blockquote><p id="prayer-blessing"></p><button class="primary" id="prayer-done">Ở lại ngắm cảnh <span>↗</span></button></section></dialog>
-<dialog id="tarot-dialog" class="wide-dialog tarot-dialog"><button type="button" class="dialog-close" aria-label="Đóng">×</button><div class="dialog-kicker">Vườn Tarot</div><h2>Một lá bài.<br>Một cách nhìn khác.</h2><p class="tarot-intro">Bộ 22 lá Ẩn chính, minh họa riêng của Third’s Hideaway. Rút bài để gợi mở suy nghĩ, không để quyết định thay bạn.</p><div class="tarot-controls"><fieldset><legend>Trải bài</legend><label><input type="radio" name="spread" value="1" checked> Một lá</label><label><input type="radio" name="spread" value="3"> Ba góc nhìn</label></fieldset><label class="select-label" for="tarot-theme">Điều bạn quan tâm<select id="tarot-theme"><option value="general">Tổng quan</option><option value="love">Kết nối</option><option value="work">Công việc</option><option value="study">Học tập</option></select></label><label class="checkbox-line"><input type="checkbox" id="tarot-reverse"> Có góc nhìn ngược</label><button class="primary" id="draw-tarot">Xáo & rút bài <span>✦</span></button></div><div id="tarot-empty" class="tarot-empty"><span class="empty-deck">✦</span><p>Mang theo một câu hỏi mở.<br>Ví dụ: “Mình có thể nhìn chuyện này theo cách nào khác?”</p></div><section id="tarot-reading" hidden><div id="reading-day" class="reading-day"></div><div id="tarot-cards" class="tarot-cards"></div><p class="flip-hint">Chạm từng lá để mở. Dành thời gian cho điều khiến bạn chú ý.</p><div id="tarot-interpretations" class="tarot-interpretations" aria-live="polite"></div><div id="tarot-summary" hidden><p id="tarot-takeaway"></p><button class="primary" id="save-reading" disabled>Lưu trải bài</button></div></section><details class="reading-history"><summary>Những trải bài đã lưu</summary><div id="tarot-history"></div></details><p class="entertainment-note">Trải nghiệm giải trí và tự suy ngẫm. Kết quả được rút ngẫu nhiên, không phải dự đoán chắc chắn về tương lai.</p></dialog>
-<dialog id="zodiac-dialog" class="wide-dialog zodiac-dialog"><button type="button" class="dialog-close" aria-label="Đóng">×</button><div class="dialog-kicker">Đài Hoàng Đạo</div><h2>Một bầu trời.<br>Mười hai sắc màu.</h2><p>Chọn chòm sao bạn thích. Nhận một gợi ý nhỏ cho ngày hôm nay.</p><div class="zodiac-layout"><div id="signs-grid" class="signs-grid" role="group" aria-label="Chọn cung hoàng đạo"></div><section class="zodiac-reading" aria-live="polite"><div class="zodiac-orbit"><span id="zodiac-symbol">♈</span></div><h3 id="zodiac-name"></h3><div id="zodiac-meta"></div><p id="zodiac-note"></p><dl><dt>Một điều để tập trung</dt><dd id="zodiac-focus"></dd><dt>Một cách để kết nối</dt><dd id="zodiac-connection"></dd><dt>Một chút chăm mình</dt><dd id="zodiac-care"></dd></dl></section></div><p class="entertainment-note">Gợi ý giải trí theo ngày, không phải bản đồ sao cá nhân hay dự báo vận mệnh. Khoảng ngày sinh là quy ước phổ biến, có thể chênh ở ngày giao cung. Không cần cung cấp ngày sinh.</p></dialog>
-<script type="module" src="./app.js"></script>
-</body></html>
+<footer class="foot">© Third’s Hideaway · <a href="./zoo/credits.html">Nguồn mô hình 3D</a></footer>
+</body>
+</html>

@@ -4,6 +4,13 @@ Không gian đền neon 3D của Third, dành cho những khoảng nghỉ giữa
 
 **Chơi tại:** https://16-doffy.github.io/videcode-chua-cau-nguyen/
 
+## Thư viện trò chơi
+
+Trang gốc là thư viện kiểu Steam: mỗi trò một ô, bấm để chơi.
+
+- **Chùa cầu nguyện** (`chua.html`): ngôi đền neon bên dưới.
+- **Third’s Zoo** (`zoo/`): xây vườn thú 3D. Mua đất, chọn môi trường sống, mua thú, cho ăn, dọn chuồng, tặng đồ chơi; thú vui thì khách đông và có thể sinh con; sao đánh giá mở khóa loài mới. Thú được dựng bằng hình khối; một loài có file `.glb` khai trong `zoo/models/manifest.json` thì dùng mô hình đó. Chạy thử: `node tests/zoo-play.cjs` khi `node serve.cjs` đang chạy.
+
 ## Có gì trong thế giới này?
 
 - Đền trên đảo nổi, cực quang, sao băng, đom đóm và hồ ánh sáng.
