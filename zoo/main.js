@@ -47,10 +47,10 @@ function onEvent(type, d) {
 }
 const sim = createSim({ admin: ADMIN, emit: onEvent });
 const saved = store.get();
-if (BLANK) {
-  sim.load(null);
-} else if (saved && saved.habitats && saved.habitats.length > 0) {
+if (saved && saved.habitats && saved.habitats.length > 0) {
   sim.load(saved);
+} else if (BLANK) {
+  sim.load(null);
 } else {
   // Fresh visitor, empty save, or old empty state: load the developer's beautifully designed showcase zoo!
   buildShowcase(sim);

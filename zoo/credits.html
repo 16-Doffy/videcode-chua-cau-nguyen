@@ -3,34 +3,306 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; base-uri 'self'; form-action 'none'">
-<title>Third’s Zoo — Nguồn mô hình</title>
+<title>Third’s Zoo — Nguồn mô hình 3D Sketchfab &amp; Hướng dẫn tích hợp</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="../fonts/fonts.css">
 <style>
-  body { margin: 0; background: #fffaf0; color: #16241c; font-family: 'Be Vietnam Pro', system-ui, sans-serif; line-height: 1.6; }
-  main { max-width: 760px; margin: 0 auto; padding: 32px 20px 48px; }
-  h1 { font-size: 26px; margin: 0 0 6px; } h2 { font-size: 18px; margin: 28px 0 8px; }
-  li { margin-bottom: 6px; } a { color: #2f6b3a; } small { color: #4f6357; }
+  :root {
+    --bg: #f8f6f0;
+    --paper: #ffffff;
+    --paper-2: #f2eee3;
+    --ink: #16241c;
+    --muted: #4f6357;
+    --leaf: #2f6b3a;
+    --leaf-dark: #173b2b;
+    --sun: #f2b134;
+    --line: #ded7c6;
+    --radius: 14px;
+  }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Be Vietnam Pro', system-ui, sans-serif; line-height: 1.6; }
+  header.hero { background: var(--leaf-dark); color: #fff7df; padding: 36px 20px 32px; border-bottom: 3px solid var(--sun); }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 16px; }
+  .back { display: inline-flex; align-items: center; gap: 6px; color: var(--sun); text-decoration: none; font-weight: 600; font-size: 14px; margin-bottom: 12px; }
+  .back:hover { text-decoration: underline; }
+  h1 { font-size: 28px; margin: 0 0 8px; font-weight: 800; letter-spacing: -0.5px; }
+  .subtitle { font-size: 15px; color: #d7e4dc; margin: 0; max-width: 700px; line-height: 1.5; }
+  
+  main { padding: 32px 0 64px; }
+  h2 { font-size: 21px; margin: 36px 0 16px; color: var(--leaf-dark); display: flex; align-items: center; gap: 10px; }
+  h2::before { content: ''; display: inline-block; width: 6px; height: 20px; background: var(--leaf); border-radius: 3px; }
+  
+  .intro-box { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; box-shadow: 0 4px 16px rgba(23,59,43,.06); font-size: 14.5px; }
+  .intro-box p { margin: 0 0 10px; }
+  .intro-box p:last-child { margin: 0; }
+  
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; }
+  @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } }
+  
+  .card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; box-shadow: 0 4px 14px rgba(23,59,43,.05); display: flex; flex-direction: column; justify-content: space-between; }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+  .card-title { font-size: 17px; font-weight: 700; margin: 0; }
+  .card-scientific { font-size: 13px; font-style: italic; color: var(--muted); display: block; }
+  .badge-cc { background: #eaf4ed; color: #1f6b3a; border: 1px solid #bde0c6; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; white-space: nowrap; }
+  
+  .card-info { font-size: 13.5px; margin: 0 0 14px; line-height: 1.5; color: #2a3a30; }
+  .card-meta { background: var(--paper-2); border-radius: 8px; padding: 8px 12px; font-size: 12px; display: grid; gap: 4px; }
+  .card-meta div { display: flex; justify-content: space-between; }
+  .card-meta span { color: var(--muted); }
+  .card-meta b { font-family: monospace; font-size: 11.5px; }
+  
+  .workflow { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; box-shadow: 0 4px 16px rgba(23,59,43,.06); }
+  .step { display: grid; grid-template-columns: 36px 1fr; gap: 14px; margin-bottom: 22px; }
+  .step:last-child { margin-bottom: 0; }
+  .step-num { width: 36px; height: 36px; background: var(--leaf-dark); color: #fff7df; border-radius: 50%; display: grid; place-content: center; font-weight: 800; font-size: 16px; flex: none; }
+  .step h3 { margin: 0 0 6px; font-size: 16px; color: var(--leaf-dark); }
+  .step p { margin: 0 0 8px; font-size: 14px; color: #2d3e33; }
+  pre { background: #1a2920; color: #eef7f0; padding: 12px 14px; border-radius: 8px; font-size: 12.5px; overflow-x: auto; margin: 8px 0; }
+  code { font-family: Consolas, Monaco, monospace; }
+  
+  a { color: var(--leaf); font-weight: 600; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  
+  .libs { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+  .libs li { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; font-size: 14px; }
 </style>
 </head>
 <body>
-<main>
-  <p><a href="./">‹ Về vườn thú</a></p>
-  <h1>Nguồn mô hình</h1>
-  <p>Tám loài thú dùng mô hình 3D chia sẻ miễn phí trên Sketchfab theo giấy phép CC BY 4.0. Trong game, mỗi mô hình được thu phóng cho vừa chuồng và chọn đoạn cử động để đi lại, đứng yên. Cây cối, chuồng, du khách được dựng bằng hình khối ngay trong trình duyệt.</p>
-  <h2>Mô hình bên ngoài</h2>
-  <ul id="models">
-    <li><b>Sư tử</b>: “<a href="https://sketchfab.com/3d-models/47a9037f236740cabbed1388bf89463d" rel="noopener">Lion animation low poly</a>” của haykel shaba, giấy phép <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>. Đã cắt lấy đoạn đứng yên và đoạn đi bộ.</li>
-    <li><b>Voi</b>: “<a href="https://sketchfab.com/3d-models/9b30220aa62f4fee926bf3aa3a565998" rel="noopener">Elephant (Low_Poly)</a>” của planeta-elefante, giấy phép <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>. Đã bỏ vòng sáng dưới chân.</li>
-    <li><b>Hươu cao cổ</b>: “<a href="https://sketchfab.com/3d-models/ad1f86104e5d4133a2ac3d99c0bc241f" rel="noopener">[Download] Low Poly Giraffe</a>” của Friendl-e-Duck, giấy phép <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>.</li>
-    <li><b>Ngựa vằn</b>: “<a href="https://sketchfab.com/3d-models/6e444ccc5b7e4758bdd2eec88f6e1c2f" rel="noopener">Zebra</a>” của planeta-elefante, giấy phép <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>.</li>
-    <li><b>Chim cánh cụt</b>: “<a href="https://sketchfab.com/3d-models/2c079bc491fb4bb4942c0f87927f8d87" rel="noopener">Penguin</a>” của Mateus Schwaab, giấy phép <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>.</li>
-    <li><b>Gấu trúc</b>: “<a href="https://sketchfab.com/3d-models/388c3230515848cb9c07724f2230af43" rel="noopener">Panda</a>” của Assets 4 Games, giấy phép <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>.</li>
-    <li><b>Gấu trúc đỏ</b>: “<a href="https://sketchfab.com/3d-models/911d1a948ae74042b7f16fa8fe87924c" rel="noopener">Red panda</a>” của galiulinEldar, giấy phép <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>.</li>
-    <li><b>Gấu nâu</b>: “<a href="https://sketchfab.com/3d-models/ce0d5eb86cf5459bb6bd20244cb44b27" rel="noopener">Bear</a>” của Nyilonelycompany, giấy phép <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>.</li>
+<header class="hero">
+  <div class="wrap">
+    <a class="back" href="./">‹ Về Third’s Zoo</a>
+    <h1>Kho Mô hình 3D Sketchfab &amp; Tài liệu Tích hợp</h1>
+    <p class="subtitle">Toàn bộ 8 mô hình động vật trong game được tuyển chọn từ các nghệ sĩ 3D trên Sketchfab dưới giấy phép Creative Commons Attribution 4.0 (CC BY 4.0), tinh chỉnh cử động skeletal mesh và tối ưu hóa WebGL trên nền Three.js.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="intro-box">
+    <p>🎮 <b>Third’s Zoo</b> kết hợp công nghệ dựng hình low-poly thời gian thực với cơ chế bách khoa động vật học kiểu <i>Planet Zoo</i>. Thú có cử động đi lại (walk), nghỉ ngơi (idle), ăn uống và giao tiếp trong chuồng. Mỗi mô hình được chuẩn hóa kích thước thực tế, gắn khung xương (armature) và ánh xạ animation trực tiếp trong trình duyệt.</p>
+    <p>🎨 Nếu bạn muốn đóng góp thêm mô hình hoặc tự tạo các loài thú mới cho vườn thú, hãy làm theo quy trình chuẩn 5 bước ở bên dưới.</p>
+  </div>
+
+  <h2>Danh sách 8 mô hình thú từ Sketchfab</h2>
+  <div class="grid">
+    <!-- Sư tử -->
+    <article class="card">
+      <div>
+        <div class="card-top">
+          <div>
+            <h3 class="card-title">🦁 Sư tử (Lion)</h3>
+            <span class="card-scientific">Panthera leo · Châu Phi</span>
+          </div>
+          <span class="badge-cc">CC BY 4.0</span>
+        </div>
+        <p class="card-info">Tác phẩm “<a href="https://sketchfab.com/3d-models/47a9037f236740cabbed1388bf89463d" target="_blank" rel="noopener">Lion animation low poly</a>” của nghệ sĩ <b>haykel shaba</b> trên Sketchfab. Cắt lấy đoạn cử động đứng nghỉ ngơi và bước đi bầy đàn.</p>
+      </div>
+      <div class="card-meta">
+        <div><span>File mô hình:</span> <b>lion.glb</b></div>
+        <div><span>Chiều cao:</span> <b>1.5 m</b></div>
+        <div><span>Animation Idle:</span> <b>0s – 1.5s</b></div>
+        <div><span>Animation Walk:</span> <b>10.8s – 12.0s</b></div>
+      </div>
+    </article>
+
+    <!-- Voi châu Phi -->
+    <article class="card">
+      <div>
+        <div class="card-top">
+          <div>
+            <h3 class="card-title">🐘 Voi châu Phi (African Elephant)</h3>
+            <span class="card-scientific">Loxodonta africana · Châu Phi</span>
+          </div>
+          <span class="badge-cc">CC BY 4.0</span>
+        </div>
+        <p class="card-info">Tác phẩm “<a href="https://sketchfab.com/3d-models/9b30220aa62f4fee926bf3aa3a565998" target="_blank" rel="noopener">Elephant (Low_Poly)</a>” của nghệ sĩ <b>planeta-elefante</b> trên Sketchfab. Đã lọc bỏ vòng hiệu ứng dưới chân để khớp với địa hình chuồng.</p>
+      </div>
+      <div class="card-meta">
+        <div><span>File mô hình:</span> <b>elephant.glb</b></div>
+        <div><span>Chiều cao:</span> <b>2.3 m</b></div>
+        <div><span>Animation Idle:</span> <b>Elephant_Idle</b></div>
+        <div><span>Animation Walk:</span> <b>Elephant_Walk</b></div>
+      </div>
+    </article>
+
+    <!-- Hươu cao cổ -->
+    <article class="card">
+      <div>
+        <div class="card-top">
+          <div>
+            <h3 class="card-title">🦒 Hươu cao cổ (Giraffe)</h3>
+            <span class="card-scientific">Giraffa camelopardalis · Châu Phi</span>
+          </div>
+          <span class="badge-cc">CC BY 4.0</span>
+        </div>
+        <p class="card-info">Tác phẩm “<a href="https://sketchfab.com/3d-models/ad1f86104e5d4133a2ac3d99c0bc241f" target="_blank" rel="noopener">[Download] Low Poly Giraffe</a>” của <b>Friendl-e-Duck</b> trên Sketchfab. Cổ cao nổi bật trên thảo nguyên savanna.</p>
+      </div>
+      <div class="card-meta">
+        <div><span>File mô hình:</span> <b>giraffe.glb</b></div>
+        <div><span>Chiều cao:</span> <b>4.2 m</b></div>
+        <div><span>Animation:</span> <b>Giraffe ArmatureAction</b></div>
+        <div><span>Sinh cảnh:</span> <b>Thảo nguyên</b></div>
+      </div>
+    </article>
+
+    <!-- Ngựa vằn -->
+    <article class="card">
+      <div>
+        <div class="card-top">
+          <div>
+            <h3 class="card-title">🦓 Ngựa vằn (Plains Zebra)</h3>
+            <span class="card-scientific">Equus quagga · Châu Phi</span>
+          </div>
+          <span class="badge-cc">CC BY 4.0</span>
+        </div>
+        <p class="card-info">Tác phẩm “<a href="https://sketchfab.com/3d-models/6e444ccc5b7e4758bdd2eec88f6e1c2f" target="_blank" rel="noopener">Zebra</a>” của nghệ sĩ <b>planeta-elefante</b> trên Sketchfab. Cộng sinh tuyệt vời cùng hươu cao cổ và voi châu Phi.</p>
+      </div>
+      <div class="card-meta">
+        <div><span>File mô hình:</span> <b>zebra.glb</b></div>
+        <div><span>Chiều cao:</span> <b>1.75 m</b></div>
+        <div><span>Animation Idle:</span> <b>Take 001_2</b></div>
+        <div><span>Animation Walk:</span> <b>Take 001_3</b></div>
+      </div>
+    </article>
+
+    <!-- Gấu trúc lớn -->
+    <article class="card">
+      <div>
+        <div class="card-top">
+          <div>
+            <h3 class="card-title">🐼 Gấu trúc (Giant Panda)</h3>
+            <span class="card-scientific">Ailuropoda melanoleuca · Châu Á</span>
+          </div>
+          <span class="badge-cc">CC BY 4.0</span>
+        </div>
+        <p class="card-info">Tác phẩm “<a href="https://sketchfab.com/3d-models/388c3230515848cb9c07724f2230af43" target="_blank" rel="noopener">Panda</a>” của <b>Assets 4 Games</b> trên Sketchfab. Thích leo trèo và ăn tre, béo tròn đáng yêu.</p>
+      </div>
+      <div class="card-meta">
+        <div><span>File mô hình:</span> <b>panda.glb</b></div>
+        <div><span>Chiều cao:</span> <b>1.25 m</b></div>
+        <div><span>Animation:</span> <b>Take 001</b></div>
+        <div><span>Sinh cảnh:</span> <b>Rừng tre</b></div>
+      </div>
+    </article>
+
+    <!-- Gấu trúc đỏ -->
+    <article class="card">
+      <div>
+        <div class="card-top">
+          <div>
+            <h3 class="card-title">🦊 Gấu trúc đỏ (Red Panda)</h3>
+            <span class="card-scientific">Ailurus fulgens · Châu Á</span>
+          </div>
+          <span class="badge-cc">CC BY 4.0</span>
+        </div>
+        <p class="card-info">Tác phẩm “<a href="https://sketchfab.com/3d-models/911d1a948ae74042b7f16fa8fe87924c" target="_blank" rel="noopener">Red panda</a>” của <b>galiulinEldar</b> trên Sketchfab. Kích thước nhỏ nhắn, leo trèo cực khéo trên cành tre.</p>
+      </div>
+      <div class="card-meta">
+        <div><span>File mô hình:</span> <b>redpanda.glb</b></div>
+        <div><span>Chiều cao:</span> <b>0.45 m</b></div>
+        <div><span>Animation:</span> <b>Armature|ArmatureAction</b></div>
+        <div><span>Tình trạng:</span> <b>Nguy cấp (EN)</b></div>
+      </div>
+    </article>
+
+    <!-- Gấu nâu -->
+    <article class="card">
+      <div>
+        <div class="card-top">
+          <div>
+            <h3 class="card-title">🐻 Gấu nâu (Brown Bear)</h3>
+            <span class="card-scientific">Ursus arctos · Bắc Mỹ &amp; Châu Âu</span>
+          </div>
+          <span class="badge-cc">CC BY 4.0</span>
+        </div>
+        <p class="card-info">Tác phẩm “<a href="https://sketchfab.com/3d-models/ce0d5eb86cf5459bb6bd20244cb44b27" target="_blank" rel="noopener">Bear</a>” của <b>Nyilonelycompany</b> trên Sketchfab. To lớn, thích cào móng vào cây thông và tắm mát.</p>
+      </div>
+      <div class="card-meta">
+        <div><span>File mô hình:</span> <b>bear.glb</b></div>
+        <div><span>Chiều cao:</span> <b>1.6 m</b></div>
+        <div><span>Animation:</span> <b>metarig|metarigAction</b></div>
+        <div><span>Sinh cảnh:</span> <b>Rừng ôn đới</b></div>
+      </div>
+    </article>
+
+    <!-- Chim cánh cụt -->
+    <article class="card">
+      <div>
+        <div class="card-top">
+          <div>
+            <h3 class="card-title">🐧 Chim cánh cụt (King Penguin)</h3>
+            <span class="card-scientific">Aptenodytes patagonicus · Nam Cực</span>
+          </div>
+          <span class="badge-cc">CC BY 4.0</span>
+        </div>
+        <p class="card-info">Tác phẩm “<a href="https://sketchfab.com/3d-models/2c079bc491fb4bb4942c0f87927f8d87" target="_blank" rel="noopener">Penguin</a>” của <b>Mateus Schwaab</b> trên Sketchfab. Dáng đi lạch bạch hài hước, cần hồ nước lạnh và nền tuyết.</p>
+      </div>
+      <div class="card-meta">
+        <div><span>File mô hình:</span> <b>penguin.glb</b></div>
+        <div><span>Chiều cao:</span> <b>0.95 m</b></div>
+        <div><span>Animation Idle:</span> <b>Iddle</b></div>
+        <div><span>Animation Walk:</span> <b>Walk</b></div>
+      </div>
+    </article>
+  </div>
+
+  <h2>Quy trình 5 bước thêm mô hình từ Sketchfab</h2>
+  <div class="workflow">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <h3>Tìm kiếm mô hình miễn phí trên Sketchfab</h3>
+        <p>Đăng nhập hoặc đăng ký tài khoản tại <a href="https://sketchfab.com/signup/finalize" target="_blank" rel="noopener">Sketchfab</a>. Truy cập mục tìm kiếm và bật bộ lọc:</p>
+        <p>• <b>Downloadable</b> (Mô hình cho phép tải về)<br>
+        • <b>License: CC BY 4.0</b> (Creative Commons Ghi công)<br>
+        • Từ khóa tìm kiếm gợi ý: <code>low poly animal animated</code>, <code>stylized animal</code>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <h3>Tải file dạng GLB (Binary glTF)</h3>
+        <p>Tại trang mô hình trên Sketchfab, bấm <b>Download 3D Model</b>. Chọn định dạng <b>Autoconverted format (glTF / GLB)</b>. Ưu tiên file <code>.glb</code> vì chứa gộp cả mesh, armature và textures trong 1 file nhị phân duy nhất gọn nhẹ.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <h3>Đặt file vào thư mục models của game</h3>
+        <p>Di chuyển file vào thư mục tài nguyên của dự án:</p>
+        <pre><code>dist/zoo/models/&lt;tên_loài&gt;.glb</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div>
+        <h3>Khai báo thông số trong manifest.json</h3>
+        <p>Mở file <code>dist/zoo/models/manifest.json</code> và thêm cấu hình animation:</p>
+        <pre><code>"&lt;tên_loài&gt;": {
+  "file": "&lt;tên_loài&gt;.glb",
+  "height": 1.6,
+  "walk": "Tên_Animation_Bước_Đi",
+  "idle": "Tên_Animation_Đứng_Yên"
+}</code></pre>
+        <p><i>Mẹo: Có thể dùng công cụ xem glTF online (như gltf-viewer.donmccurdy.com) để tra chính xác tên các Animation Clip có sẵn trong file.</i></p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div>
+        <h3>Đăng ký thông số sinh học trong data.js</h3>
+        <p>Khai báo loài mới trong mảng <code>SPECIES</code> của <code>dist/zoo/data.js</code>: tên khoa học (scientific), sinh quyển (biome), châu lục (continent), các loài cộng sinh tương thích (compatible), và sự thật sinh học (fact). Cuối cùng, thêm thông tin ghi công nghệ sĩ vào file <code>credits.html</code> này.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2>Thư viện mã nguồn mở</h2>
+  <ul class="libs">
+    <li><b>Three.js</b> v0.169.0 — Thư viện dựng hình đồ họa 3D WebGL (Giấy phép MIT).</li>
+    <li><b>Be Vietnam Pro &amp; Manrope</b> — Phông chữ hiển thị tiếng Việt tối ưu cho giao diện (Giấy phép SIL Open Font License).</li>
   </ul>
-  <h2>Thư viện</h2>
-  <ul><li>Three.js 0.169.0, giấy phép MIT.</li><li>Font Be Vietnam Pro và Manrope, giấy phép SIL OFL.</li></ul>
 </main>
 </body>
 </html>
