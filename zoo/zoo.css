@@ -146,7 +146,7 @@ i.in { background: var(--good); } i.out { background: var(--bad); }
 .toast { background: var(--leaf-dark); color: #fff7df; padding: 10px 14px; border-radius: 10px; font-size: 14px; line-height: 1.4; box-shadow: 0 8px 24px rgba(0,0,0,.18); transition: opacity .5s, transform .5s; }
 .toast.good { background: #1f7a4c; } .toast.warn { background: #9a4b14; }
 .toast.out { opacity: 0; transform: translateY(8px); }
-.foot { position: fixed; left: 16px; bottom: 14px; display: flex; gap: 10px; z-index: 5; }
+.foot { position: fixed; right: 16px; bottom: 14px; display: flex; gap: 10px; z-index: 10; }
 .link { border: 0; background: rgba(255,250,240,.85); color: var(--ink); font-size: 12px; padding: 5px 10px; border-radius: 7px; text-decoration: none; }
 .loading { position: fixed; inset: 0; display: grid; place-content: center; gap: 12px; background: #173b2b; color: #fff7df; z-index: 20; transition: opacity .6s; text-align: center; }
 .loading.hide { opacity: 0; pointer-events: none; }
