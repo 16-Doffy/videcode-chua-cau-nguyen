@@ -5,8 +5,8 @@
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; frame-src 'none'; worker-src 'none'">
 <meta name="theme-color" content="#173b2b">
-<meta name="description" content="Third’s Zoo — xây vườn thú 3D ngay trên trình duyệt: mua đất, chọn môi trường sống, chăm thú và đón khách.">
-<title>Third’s Zoo — Xây vườn thú của bạn</title>
+<meta name="description" content="Third’s Zoo — quản lý vườn thú 3D ngay trên trình duyệt: xây chuồng, chăm phúc lợi từng con thú, thuê nhân viên, phục vụ khách, nghiên cứu và bảo tồn.">
+<title>Third’s Zoo — Quản lý vườn thú của bạn</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="../fonts/fonts.css"><link rel="stylesheet" href="./zoo.css">
 </head>
@@ -18,7 +18,9 @@
   <div class="brand">Third’s Zoo <span class="admin-tag">Admin · miễn phí</span></div>
   <div class="stats">
     <div id="hud-money" class="stat"><small>Xu</small><b id="money">0 xu</b></div>
+    <div class="stat" title="Điểm bảo tồn: thả thú về tự nhiên để nhận, dùng mua loài nguy cấp"><small>Bảo tồn</small><b id="cc">0</b></div>
     <div class="stat"><small>Khách</small><b id="guests">0</b></div>
+    <div class="stat"><small>Khách vui</small><b id="happy">0%</b></div>
     <div class="stat"><small>Đánh giá</small><b id="stars" class="stars" role="img"></b></div>
     <div class="stat"><small>Thời gian</small><b id="day">Ngày 1</b></div>
   </div>
@@ -30,13 +32,26 @@
   </div>
 </header>
 
+<nav class="tools" aria-label="Công cụ quản lý">
+  <button data-drawer="build">Đồ trong chuồng</button>
+  <button data-drawer="services">Dịch vụ khách</button>
+  <button data-drawer="staff">Nhân viên</button>
+  <button data-drawer="market">Chợ thú</button>
+  <button data-drawer="research">Nghiên cứu</button>
+  <button data-drawer="finance">Tài chính</button>
+  <button data-drawer="goals">Mục tiêu</button>
+</nav>
+<aside id="drawer" class="drawer" hidden aria-live="polite"></aside>
+<div id="mode" class="mode" hidden></div>
+
 <aside id="tips" class="tips">
   <h2>Cách chơi</h2>
   <ol>
-    <li>Bấm một <b>khu đất trống</b>, chọn môi trường sống rồi mua.</li>
-    <li>Thêm thú hợp môi trường. Mỗi loài thích sống thành bầy cỡ khác nhau.</li>
-    <li>Cho ăn, dọn chuồng, tặng đồ chơi để thú vui. Thú vui thì khách đến đông và có thể sinh con.</li>
-    <li>Khách trả vé mỗi 10 giây. Đạt thêm sao để mở khóa loài mới.</li>
+    <li>Bấm một <b>khu đất trống</b> để mua chuồng và chọn môi trường sống.</li>
+    <li>Vào <b>Đồ trong chuồng</b> đặt hồ nước, nhà trú, cây, đồ chơi. Mỗi loài cần những thứ khác nhau.</li>
+    <li>Mua thú ở <b>Chợ thú</b>, thuê <b>nhân viên chăm thú</b> để chúng được ăn uống và chuồng sạch.</li>
+    <li>Bấm vào một con thú để xem phúc lợi của nó và điều nó còn thiếu.</li>
+    <li>Xây quầy ăn, quầy nước, nhà vệ sinh cho khách. Làm xong các <b>Mục tiêu</b> để nhận thưởng.</li>
   </ol>
   <p>Kéo để xoay, cuộn hoặc chụm hai ngón để phóng to. Tiến trình tự lưu trên máy này.</p>
   <button id="tips-close">Bắt đầu</button>
