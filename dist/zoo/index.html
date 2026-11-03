@@ -33,13 +33,19 @@
 </header>
 
 <nav class="tools" aria-label="Công cụ quản lý">
+  <button data-drawer="path">Lối đi</button>
+  <button data-drawer="fence">Rào chuồng</button>
+  <button data-drawer="paint">Tô địa hình</button>
   <button data-drawer="build">Đồ trong chuồng</button>
   <button data-drawer="services">Dịch vụ khách</button>
+  <button data-drawer="remove">Dỡ bỏ</button>
   <button data-drawer="staff">Nhân viên</button>
   <button data-drawer="market">Chợ thú</button>
   <button data-drawer="research">Nghiên cứu</button>
   <button data-drawer="finance">Tài chính</button>
   <button data-drawer="goals">Mục tiêu</button>
+  <button data-drawer="zoo">Bách khoa thú</button>
+  <button id="heat" aria-pressed="false" title="Tô màu khách theo mức vui">Cảm xúc khách</button>
 </nav>
 <aside id="drawer" class="drawer" hidden aria-live="polite"></aside>
 <div id="mode" class="mode" hidden></div>
@@ -47,11 +53,12 @@
 <aside id="tips" class="tips">
   <h2>Cách chơi</h2>
   <ol>
-    <li>Bấm một <b>khu đất trống</b> để mua chuồng và chọn môi trường sống.</li>
-    <li>Vào <b>Đồ trong chuồng</b> đặt hồ nước, nhà trú, cây, đồ chơi. Mỗi loài cần những thứ khác nhau.</li>
+    <li>Dùng <b>Lối đi</b> vẽ từ đường ở cổng vào. Khách và nhân viên chỉ tới được nơi có đường nối.</li>
+    <li>Dùng <b>Rào chuồng</b> bấm từng góc rồi khép kín; dựng rào sát đường để có cổng vào.</li>
+    <li><b>Tô địa hình</b>, rồi đặt hồ nước, nhà trú, cây và đồ chơi trong chuồng.</li>
     <li>Mua thú ở <b>Chợ thú</b>, thuê <b>nhân viên chăm thú</b> để chúng được ăn uống và chuồng sạch.</li>
     <li>Bấm vào một con thú để xem phúc lợi của nó và điều nó còn thiếu.</li>
-    <li>Xây quầy ăn, quầy nước, nhà vệ sinh cho khách. Làm xong các <b>Mục tiêu</b> để nhận thưởng.</li>
+    <li>Xây quầy ăn, quầy nước, nhà vệ sinh cạnh đường. Làm các <b>Mục tiêu</b> để nhận thưởng.</li>
   </ol>
   <p>Kéo để xoay, cuộn hoặc chụm hai ngón để phóng to. Tiến trình tự lưu trên máy này.</p>
   <button id="tips-close">Bắt đầu</button>
@@ -59,7 +66,7 @@
 
 <section id="panel" class="panel" hidden aria-live="polite"></section>
 <div id="toasts" class="toasts" aria-live="polite"></div>
-<footer class="foot"><button id="reset" class="link">Chơi lại từ đầu</button><a class="link" href="./credits.html">Nguồn mô hình</a><a id="admin-exit" class="link" href="./" hidden>Thoát admin</a></footer>
+<footer class="foot"><button id="showcase-btn" class="link">✨ Vườn thú mẫu của Dev</button><button id="reset" class="link">Chơi lại từ đầu</button><a class="link" href="./credits.html">Nguồn mô hình</a><a id="admin-exit" class="link" href="./" hidden>Thoát admin</a></footer>
 <div id="loading" class="loading"><div class="ring"></div><p>Đang dựng vườn thú…</p></div>
 <script type="module" src="./main.js"></script>
 </body>
