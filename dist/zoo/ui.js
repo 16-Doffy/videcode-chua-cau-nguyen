@@ -1,7 +1,7 @@
 // Third's Zoo screens: the top bar, the tools on the left with their drawer, the details panel on the right and
 // the banner that says what a building tool is doing. main.js passes taps, hovers and brush strokes in.
 import {
-  TERRAIN, PLANTS, SPECIES, SPECIES_BY_ID, STATUS, ITEMS, BUILD_ORDER, BARRIERS, FACILITIES, FACILITY_ORDER, SHOPS, STAFF, STAFF_ORDER,
+  TERRAIN, PLANTS, SPECIES, SPECIES_BY_ID, STATUS, BIOMES, ITEMS, BUILD_ORDER, BARRIERS, FACILITIES, FACILITY_ORDER, SHOPS, STAFF, STAFF_ORDER,
   RESEARCH, RESEARCH_ORDER, BOARD_COST, GOALS, PATH_COST,
 } from './data.js';
 import { NEED_LABELS, GUEST_NEEDS } from './sim.js';
@@ -19,7 +19,7 @@ export function createUI({ sim, world, onReset, onShowcase }) {
   const fmt = sim.fmt;
   const price = (n) => (sim.admin ? 'Miễn phí' : fmt(n));
   const phone = () => matchMedia('(max-width: 720px)').matches;
-  const ui = { drawer: null, sel: null, mode: null, marketHab: null, heat: false, fenceGrade: 1, paintType: 'soil', brush: 2.5 };
+  const ui = { drawer: null, sel: null, mode: null, marketHab: null, heat: false, fenceGrade: 1, paintType: 'soil', brush: 2.5, zoopediaBiome: 'Tất cả', zoopediaFocus: null };
   const panel = $('#panel'); const drawer = $('#drawer'); const modeBar = $('#mode');
   const habs = () => S().habitats;
   const ageText = (a) => { const sp = SPECIES_BY_ID[a.species]; return a.age < sp.adult ? 'con non' : a.age > sp.life * 0.85 ? 'già' : 'trưởng thành'; };
@@ -52,6 +52,17 @@ export function createUI({ sim, world, onReset, onShowcase }) {
     const ground = TERRAIN.map((t) => `<i style="width:${(st.share[t.id] || 0) * 100}%;background:${hex(t.color)}" title="${t.name} ${pct((st.share[t.id] || 0) * 100)}"></i>`).join('');
     const legend = TERRAIN.filter((t) => st.share[t.id] > 0.01).map((t) => `<span><b style="background:${hex(t.color)}"></b>${t.name} ${pct(st.share[t.id] * 100)}</span>`).join('');
     const status = !st.gate ? '<span class="warn">Chưa có lối vào: làm lối đi tới sát rào để nhân viên vào được và khách xem được.</span>' : n ? (covered ? 'Có nhân viên chăm thú phụ trách.' : '<span class="warn">Chưa có nhân viên chăm chuồng này.</span>') : 'Có lối vào. Chuẩn bị chuồng rồi mua thú.';
+    const uniqueSpecies = [...new Set(st.animals.map((a) => a.species))];
+    const compatPairs = [];
+    for (let i = 0; i < uniqueSpecies.length; i++) {
+      for (let j = i + 1; j < uniqueSpecies.length; j++) {
+        const s1 = SPECIES_BY_ID[uniqueSpecies[i]];
+        const s2 = SPECIES_BY_ID[uniqueSpecies[j]];
+        if (s1?.compatible?.includes(s2?.id)) compatPairs.push(`${s1.name} &amp; ${s2.name}`);
+      }
+    }
+    const hasPredator = uniqueSpecies.some((s) => SPECIES_BY_ID[s]?.predator);
+    const hasHerbivore = uniqueSpecies.some((s) => !SPECIES_BY_ID[s]?.predator);
     return `${head(`${Math.round(st.area)} m² · chu vi ${Math.round(st.perimeter)} m`, esc(h.name))}
       <div class="rows">
         <div class="row"><span>Thức ăn</span>${bar(h.food, 'Thức ăn')}<b>${pct(h.food)}</b></div>
@@ -59,7 +70,9 @@ export function createUI({ sim, world, onReset, onShowcase }) {
         <div class="row"><span>Vệ sinh</span>${bar(h.clean, 'Vệ sinh')}<b>${pct(h.clean)}</b></div>
       </div>
       <p class="note">${status}</p>
-      <div class="actions"><button data-act="open" data-to="build">Đặt đồ</button><button data-act="open" data-to="paint">Tô địa hình</button><button data-act="open" data-to="market">Mua thú</button><button class="soft" data-act="care">Tự chăm · ${price(40 + 15 * n)}</button></div>
+      ${compatPairs.length ? `<div class="habitat-banner good">🤝 <b>Cộng sinh phong phú loài:</b> ${compatPairs.join(', ')} (+15% hòa đồng)</div>` : ''}
+      ${hasPredator && hasHerbivore ? '<div class="habitat-banner warn">⚠️ <b>Cảnh báo nguy hiểm:</b> Thú săn mồi sống cùng thú ăn cỏ làm chúng hoảng sợ!</div>' : ''}
+      <div class="actions"><button data-act="open" data-to="build">Đặt đồ</button><button data-act="open" data-to="paint">Tô địa hình</button><button data-act="open" data-to="market">Mua thú</button><button class="soft" data-act="open-zoopedia" ${uniqueSpecies[0] ? `data-sp="${uniqueSpecies[0]}"` : ''}>📖 Zoopedia</button><button class="soft" data-act="care">Tự chăm · ${price(40 + 15 * n)}</button></div>
       <h3>Hàng rào</h3>
       <p class="note">${BARRIERS[h.barrier].name}${needBarrier > h.barrier ? ` · <span class="warn">thú ở đây cần ${BARRIERS[needBarrier].name.toLowerCase()}, chúng có thể xổng chuồng</span>` : ''}</p>
       ${next ? `<button class="soft" data-act="barrier" ${next.research && !sim.done(next.research) ? 'disabled' : ''}>Nâng lên ${next.name.toLowerCase()} · ${price(sim.actions.upgradeCost(h.id))}${next.research && !sim.done(next.research) ? ' (cần nghiên cứu)' : ''}</button>` : ''}
@@ -74,7 +87,7 @@ export function createUI({ sim, world, onReset, onShowcase }) {
         <dt>Đồ chơi</dt><dd>${esc(types)}</dd>
       </dl>
       <h3>Bảng giáo dục</h3>
-      ${h.board ? '<p class="note">Đã có: khách quyên góp nhiều hơn.</p>' : `<button class="soft" data-act="board" ${sim.done('board') ? '' : 'disabled'}>Dựng bảng · ${price(BOARD_COST)}${sim.done('board') ? '' : ' (cần nghiên cứu)'}</button>`}
+      ${h.board ? `<p class="note">🎓 Đã dựng bảng giáo dục${uniqueSpecies.length ? ` (giới thiệu ${uniqueSpecies.map((s) => SPECIES_BY_ID[s]?.name).filter(Boolean).join(', ')})` : ''}: khách quyên góp nhiều hơn (+50%).</p>` : `<button class="soft" data-act="board" ${sim.done('board') ? '' : 'disabled'}>Dựng bảng · ${price(BOARD_COST)}${sim.done('board') ? '' : ' (cần nghiên cứu)'}</button>`}
       <h3>Thú trong chuồng</h3>
       ${n ? `<ul class="list">${st.animals.map((a) => { const [m, c] = mood(a.welfare); const sp = SPECIES_BY_ID[a.species]; return `<li><button class="pick" data-act="sel-animal" data-id="${a.id}"><span><b>${esc(a.name)}</b> <small>${sp.name} · ${a.sex === 'M' ? 'đực' : 'cái'} · ${ageText(a)}${a.sick ? ' · <em class="warn">ốm</em>' : ''}${a.pregnant ? ' · mang thai' : ''}</small></span><span class="mood ${c}">${m}</span></button></li>`; }).join('')}</ul>` : '<p class="note">Chưa có con nào.</p>'}
       <button class="link-btn danger" data-act="remove-hab">${ui.armRemove === h.id ? 'Bấm lần nữa để dỡ chuồng' : 'Dỡ chuồng này'}</button>`;
@@ -82,14 +95,21 @@ export function createUI({ sim, world, onReset, onShowcase }) {
   function animalHtml(a) {
     const sp = SPECIES_BY_ID[a.species]; const [m, c] = mood(a.welfare); const h = sim.habById(a.hab);
     const others = habs().filter((x) => x.id !== a.hab);
-    const needs = Object.keys(NEED_LABELS).map((k) => `<div class="need"><div class="row"><span>${NEED_LABELS[k]}</span>${bar(a.needs[k] ?? 0, NEED_LABELS[k])}<b>${pct(a.needs[k] ?? 0)}</b></div>${a.why?.[k] ? `<small>${esc(a.why[k])}</small>` : ''}</div>`).join('');
+    const needs = Object.keys(NEED_LABELS).map((k) => {
+      let extra = '';
+      if (k === 'social' && a.why?.socialFriend) {
+        extra = `<small class="friend-note">🤝 ${esc(a.why.socialFriend)} (+15% cộng sinh)</small>`;
+      }
+      return `<div class="need"><div class="row"><span>${NEED_LABELS[k]}</span>${bar(a.needs[k] ?? 0, NEED_LABELS[k])}<b>${pct(a.needs[k] ?? 0)}</b></div>${a.why?.[k] ? `<small>${esc(a.why[k])}</small>` : ''}${extra}</div>`;
+    }).join('');
     return `${head(`${sp.name} · ${a.escaped ? 'đang xổng chuồng!' : esc(h?.name || '')}`, esc(a.name))}
-      <p class="lead">${a.sex === 'M' ? 'Đực' : 'Cái'} · ${a.age} ngày tuổi (${ageText(a)}) · ${STATUS[sp.status].name}${a.sick ? ' · <span class="warn">đang ốm</span>' : ''}${a.pregnant ? ` · mang thai, còn ${a.pregnant} ngày` : ''}</p>
+      <p class="lead"><em>${esc(sp.scientific || '')}</em> · ${a.sex === 'M' ? 'Đực' : 'Cái'} · ${a.age} ngày tuổi (${ageText(a)}) · <span class="badge-iucn badge-${sp.status.toLowerCase()}">${sp.status}</span>${a.sick ? ' · <span class="warn">đang ốm</span>' : ''}${a.pregnant ? ` · mang thai, còn ${a.pregnant} ngày` : ''}</p>
       <div class="welfare"><span>Phúc lợi</span>${bar(a.welfare, 'Phúc lợi')}<b class="mood ${c}">${m} · ${pct(a.welfare)}</b></div>
       <div class="needs">${needs}</div>
       <label class="check"><input type="checkbox" data-act="contra" ${a.contraception ? 'checked' : ''}> Ngừa thai (không sinh con)</label>
       <div class="actions">
         ${others.length ? `<label class="move">Chuyển sang <select data-act="move"><option value="">chọn chuồng…</option>${others.map((x) => `<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></label>` : ''}
+        <button class="soft" data-act="open-zoopedia" data-sp="${sp.id}">📖 Tra cứu Zoopedia</button>
         <button class="soft" data-act="sell">${sp.cc ? `Chuyển vườn khác (+${Math.round(sp.cc * 0.4)} điểm)` : `Bán sang vườn khác (+${fmt(sp.price * 0.5)})`}</button>
         <button class="soft" data-act="release">Thả về tự nhiên (+${STATUS[sp.status].release} điểm bảo tồn)</button>
       </div>
@@ -159,18 +179,73 @@ export function createUI({ sim, world, onReset, onShowcase }) {
         <button class="soft wide" data-act="refresh-market">Làm mới hàng · ${price(150)}</button>
         <p class="note">Bạn có ${sim.admin ? 'vô hạn' : S().cc} điểm bảo tồn. Thả thú trưởng thành, khỏe mạnh về tự nhiên để nhận thêm.</p>`;
     },
-    zoo: () => `${dhead('Bách khoa thú', 'Mỗi loài cần gì để sống vui trong chuồng.')}
-      ${SPECIES.map((sp) => `<section class="species"><h3>${sp.name} <small>${STATUS[sp.status].name}</small></h3><p class="note">${esc(sp.blurb)}</p>
-        <dl class="facts">
-          <dt>Bầy</dt><dd>${sp.group[0]}–${sp.group[1]} con${sp.males < sp.group[1] ? `, tối đa ${sp.males} đực` : ''}</dd>
-          <dt>Đất mỗi con</dt><dd>${sp.area} m²</dd>
-          <dt>Mặt nước</dt><dd>${pct(sp.water * 100)} chuồng</dd>
-          <dt>Nền đất</dt><dd>${TERRAIN.find((t) => t.id === sp.terrain[0]).name} ${pct(sp.terrain[1] * 100)}</dd>
-          <dt>Cây</dt><dd>${PLANTS[sp.plants[0]].name}, ${sp.plants[1]} cây/100 m²</dd>
-          <dt>Hàng rào</dt><dd>${BARRIERS[sp.barrier].name}</dd>
-          <dt>Thích chơi</dt><dd>${sp.likes.map((t) => ITEMS[t].name).join(', ')}</dd>
-          <dt>Giá</dt><dd>${sp.cc ? `${sp.cc} điểm bảo tồn` : fmt(sp.price)}</dd>
-        </dl></section>`).join('')}`,
+    zoo: () => {
+      const curBiome = ui.zoopediaBiome || 'Tất cả';
+      const list = curBiome === 'Tất cả' ? SPECIES : SPECIES.filter((s) => s.biome === curBiome);
+      return `${dhead('Bách khoa thú · Zoopedia', 'Nghiên cứu sinh thái, cấu trúc bầy đàn và lợi ích cộng sinh.')}
+        <div class="zoopedia-biomes">
+          ${BIOMES.map((b) => `<button class="pill ${b === curBiome ? 'active' : ''}" data-act="zoo-biome" data-b="${b}">${b}</button>`).join('')}
+        </div>
+        <div class="zoopedia-list">
+          ${list.map((sp) => {
+            const inZoo = S().animals.filter((a) => a.species === sp.id);
+            const st = STATUS[sp.status];
+            const terrainName = TERRAIN.find((t) => t.id === sp.terrain[0])?.name || sp.terrain[0];
+            const plantName = PLANTS[sp.plants[0]]?.name || sp.plants[0];
+            const barrierName = BARRIERS[sp.barrier]?.name || `Cấp ${sp.barrier}`;
+            const enrichNames = sp.likes.map((t) => ITEMS[t]?.name).filter(Boolean).join(', ');
+            const compatNames = sp.compatible?.length
+              ? sp.compatible.map((id) => SPECIES_BY_ID[id]?.name).filter(Boolean).join(', ')
+              : '';
+            return `<article class="zoo-card ${ui.zoopediaFocus === sp.id ? 'highlight' : ''}" id="zoo-card-${sp.id}">
+              <div class="zoo-header">
+                <div>
+                  <h3>${sp.name} <em class="zoo-scientific">${sp.scientific}</em></h3>
+                  <div class="zoo-tags">
+                    <span class="badge-iucn badge-${sp.status.toLowerCase()}" title="${st.name}">${st.tag} · ${st.name}</span>
+                    <span class="tag-meta">🌍 ${sp.continent}</span>
+                    <span class="tag-meta">🌿 ${sp.biome}</span>
+                  </div>
+                </div>
+              </div>
+              <p class="zoo-blurb">${esc(sp.blurb)}</p>
+              <div class="zoo-fact">
+                <span class="zoo-fact-icon">💡</span>
+                <div class="zoo-fact-text"><b>Sự thật sinh học:</b> ${esc(sp.fact || '')}</div>
+              </div>
+              ${sp.compatible?.length ? `
+                <div class="zoo-enrich bonus">
+                  <span class="zoo-enrich-icon">🤝</span>
+                  <div><b>Cộng sinh phong phú (+15% hòa đồng):</b> Nuôi cùng ${compatNames}.</div>
+                </div>
+              ` : sp.predator ? `
+                <div class="zoo-enrich warn">
+                  <span class="zoo-enrich-icon">⚠️</span>
+                  <div><b>Thú ăn thịt:</b> Không nuôi chung thú ăn cỏ. Cần rào thép kiên cố.</div>
+                </div>
+              ` : ''}
+              <div class="zoo-specs">
+                <div><small>Bầy đàn</small><b>${sp.group[0]}–${sp.group[1]} con${sp.males < sp.group[1] ? ` (≤${sp.males} đực)` : ''}</b></div>
+                <div><small>Đất tối thiểu</small><b>${sp.area} m²/con</b></div>
+                <div><small>Nhu cầu nước</small><b>${pct(sp.water * 100)} chuồng</b></div>
+                <div><small>Nền địa hình</small><b>${terrainName} ≥${pct(sp.terrain[1] * 100)}</b></div>
+                <div><small>Cây xanh</small><b>${plantName} (${sp.plants[1]}/100m²)</b></div>
+                <div><small>Hàng rào</small><b>${barrierName}</b></div>
+                <div><small>Đồ chơi thích</small><b>${enrichNames}</b></div>
+                <div><small>Vòng đời</small><b>${sp.life} ngày · ${sp.litter[0]}–${sp.litter[1]} con/lứa</b></div>
+              </div>
+              <div class="zoo-footer">
+                <span class="zoo-price">${sp.cc ? `${sp.cc} điểm bảo tồn` : fmt(sp.price)}</span>
+                <div class="zoo-actions">
+                  ${inZoo.length ? `<button class="soft" data-act="zoo-locate" data-sp="${sp.id}">🔍 Xem (${inZoo.length})</button>` : ''}
+                  <button data-act="zoo-to-market" data-sp="${sp.id}">Đến Chợ thú</button>
+                </div>
+              </div>
+            </article>`;
+          }).join('')}
+        </div>
+        <div class="zoo-credits-link"><a href="./credits.html" target="_blank" rel="noopener">🎨 Nguồn mô hình 3D Sketchfab &amp; Hướng dẫn thêm thú ↗</a></div>`;
+    },
     research: () => {
       const r = S().research;
       const track = (t) => `<p class="note">${t === 'vet' ? `Bác sĩ thú y: ${S().staff.vet} người · +${S().staff.vet * 10} điểm/ngày` : `Thợ máy: ${S().staff.mechanic} người · +${S().staff.mechanic * 8} điểm/ngày`}${r.bank[t] ? ` · có ${r.bank[t]} điểm chưa dùng` : ''}</p>`;
@@ -198,6 +273,7 @@ export function createUI({ sim, world, onReset, onShowcase }) {
   function renderDrawer() {
     document.querySelectorAll('[data-drawer]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.drawer === ui.drawer)));
     document.body.classList.toggle('drawer-open', !!ui.drawer);
+    document.body.classList.toggle('drawer-zoo', ui.drawer === 'zoo');
     if (!ui.drawer) { drawer.hidden = true; return; }
     drawer.hidden = false;
     drawer.innerHTML = DRAWERS[ui.drawer]() + (phone() && ['path', 'fence', 'paint', 'remove'].includes(ui.drawer) ? '<button class="wide" data-act="tool-start">Bắt đầu vẽ trên bản đồ</button>' : '');
@@ -311,6 +387,25 @@ export function createUI({ sim, world, onReset, onShowcase }) {
       case 'research': A.startResearch(d.id); break;
       case 'entry': A.setEntry(S().entry + Number(d.d)); break;
       case 'price': A.setPrice(d.type, S().prices[d.type] + Number(d.d)); break;
+      case 'zoo-biome': ui.zoopediaBiome = d.b; renderDrawer(); return;
+      case 'zoo-locate': {
+        const found = S().animals.find((a) => a.species === d.sp);
+        if (found) { ui.drawer = null; renderDrawer(); select({ kind: 'animal', id: found.id }); }
+        return;
+      }
+      case 'zoo-to-market': openDrawer('market'); return;
+      case 'open-zoopedia': {
+        ui.zoopediaFocus = d.sp || null;
+        if (d.sp) ui.zoopediaBiome = 'Tất cả';
+        openDrawer('zoo');
+        if (d.sp) {
+          setTimeout(() => {
+            const el = drawer.querySelector(`#zoo-card-${d.sp}`);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }, 60);
+        }
+        return;
+      }
       default: return;
     }
     renderDrawer(); renderPanel();

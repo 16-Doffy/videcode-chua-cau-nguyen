@@ -150,6 +150,14 @@ export function createSim({ admin = false, emit = () => {} } = {}) {
     if (same.length > sp.group[1]) why.social = 'Quá đông, nên chuyển bớt đi';
     if (males > sp.males) { social *= 0.55; why.social = `Quá nhiều con đực trưởng thành (${males}), chúng hay đánh nhau`; }
     if (!sp.predator && st.predators) { social *= 0.3; why.social = 'Sợ hãi vì ở chung với thú săn mồi'; }
+    if (sp.compatible?.length) {
+      const friends = st.animals.filter((x) => sp.compatible.includes(x.species));
+      if (friends.length > 0) {
+        social = clamp(social * 1.15, 0, 1.25);
+        const friendNames = [...new Set(friends.map((x) => SPECIES_BY_ID[x.species].name))].join(', ');
+        why.socialFriend = `Thích sống cùng ${friendNames}`;
+      }
+    }
     const land = st.landNeed ? clamp(st.land / st.landNeed, 0, 1) : 1;
     const water = sp.water ? clamp(st.water / st.area / sp.water, 0, 1) : 1;
     const [ground, want] = sp.terrain; const terrain = clamp((st.share[ground] || 0) / want, 0, 1);

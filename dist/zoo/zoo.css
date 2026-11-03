@@ -136,7 +136,7 @@ i.in { background: var(--good); } i.out { background: var(--bad); }
 .mode { position: fixed; top: calc(var(--top) + 14px); left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; background: var(--leaf-dark); color: #fff7df; padding: 8px 8px 8px 16px; border-radius: 12px; z-index: 9; font-size: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.25); max-width: calc(100vw - 32px); }
 .mode button { border: 0; background: var(--sun); color: #2b1d00; font-weight: 800; border-radius: 8px; padding: 7px 14px; }
 
-.tips { position: fixed; top: calc(var(--top) + 14px); left: 190px; width: min(360px, calc(100vw - 32px)); background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; z-index: 9; box-shadow: 0 10px 30px rgba(23,59,43,.18); }
+.tips { position: fixed; top: calc(var(--top) + 14px); left: 190px; width: min(360px, calc(100vw - 32px)); background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; z-index: 30; box-shadow: 0 10px 30px rgba(23,59,43,.18); }
 .tips h2 { margin: 0 0 8px; font-size: 17px; }
 .tips ol { margin: 0 0 10px; padding-left: 20px; display: grid; gap: 6px; font-size: 14px; line-height: 1.45; }
 .tips p { margin: 0 0 12px; font-size: 13px; color: var(--muted); }
@@ -154,6 +154,217 @@ i.in { background: var(--good); } i.out { background: var(--bad); }
 @keyframes spin { to { transform: rotate(360deg); } }
 button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
 
+.drawer.wide, body.drawer-zoo .drawer { width: min(470px, calc(100vw - 210px)); }
+
+/* IUCN Status Badges */
+.badge-iucn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.4px;
+  color: #fff;
+  vertical-align: middle;
+}
+.badge-iucn.badge-lc { background: #27ae60; }
+.badge-iucn.badge-vu { background: #d97706; }
+.badge-iucn.badge-en { background: #dc2626; }
+
+/* Zoopedia layout & cards */
+.zoopedia-biomes {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 4px 0 10px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+  scrollbar-width: none;
+}
+.zoopedia-biomes::-webkit-scrollbar { display: none; }
+.pill {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .2s;
+}
+.pill:hover { border-color: var(--leaf); background: var(--paper-2); }
+.pill.active {
+  background: var(--leaf-dark);
+  color: #fff7df;
+  border-color: var(--leaf-dark);
+}
+.zoo-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 13px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  transition: border-color .3s, box-shadow .3s;
+}
+.zoo-card.highlight {
+  border-color: var(--sun);
+  box-shadow: 0 0 0 2px var(--sun);
+}
+.zoo-header h3 {
+  margin: 0 0 4px;
+  font-size: 17px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.zoo-scientific {
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+  font-weight: 500;
+}
+.zoo-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 4px;
+}
+.tag-meta {
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--paper-2);
+  color: var(--ink);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+.zoo-blurb {
+  margin: 2px 0;
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.4;
+}
+.zoo-fact {
+  background: #fdf8eb;
+  border-left: 3px solid var(--sun);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #4a3811;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.zoo-fact-icon { font-size: 14px; flex: none; }
+.zoo-enrich {
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.zoo-enrich.bonus {
+  background: #edf8f1;
+  border: 1px solid #c2e7cf;
+  color: #17522f;
+}
+.zoo-enrich.warn {
+  background: #fdf2ed;
+  border: 1px solid #f8d5c2;
+  color: #8c3b17;
+}
+.zoo-enrich-icon { font-size: 14px; flex: none; }
+.zoo-specs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+  background: var(--paper-2);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+.zoo-specs small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+}
+.zoo-specs b {
+  color: var(--ink);
+  font-size: 12px;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.zoo-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.zoo-price {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--leaf-dark);
+}
+.zoo-actions {
+  display: flex;
+  gap: 6px;
+}
+.habitat-banner {
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  margin: 8px 0;
+}
+.habitat-banner.good {
+  background: #edf8f1;
+  border: 1px solid #c2e7cf;
+  color: #17522f;
+}
+.habitat-banner.warn {
+  background: #fdf2ed;
+  border: 1px solid #f8d5c2;
+  color: #8c3b17;
+}
+.friend-note {
+  display: block;
+  color: #17522f;
+  font-weight: 600;
+  font-size: 12px;
+  margin: 2px 0 0 104px;
+  line-height: 1.35;
+}
+.zoo-credits-link {
+  text-align: center;
+  margin: 16px 0 8px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+  font-size: 13px;
+}
+.zoo-credits-link a {
+  color: var(--leaf);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
 /* Narrow desktop: the drawer covers the rail's right side less */
 @media (max-width: 1100px) and (min-width: 721px) { .stats { gap: 12px; } .stat b { font-size: 14px; } .brand { display: none; } }
 
@@ -170,11 +381,11 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
   .tools button { flex: none; padding: 8px 12px; font-size: 13px; box-shadow: none; }
   .drawer, .panel { left: 0; right: 0; top: auto; bottom: 52px; width: 100%; max-height: 60vh; border-radius: 16px 16px 0 0; }
   body.drawer-open .panel { display: none; }
-  .tips { top: auto; bottom: 64px; left: 12px; width: calc(100vw - 24px); }
+  .tips { top: auto; bottom: 64px; left: 12px; width: calc(100vw - 24px); z-index: 30; }
   .toasts { bottom: auto; top: calc(var(--top) + 8px); }
   .mode { top: calc(var(--top) + 8px); width: calc(100vw - 24px); justify-content: space-between; }
   .foot { bottom: 60px; left: 10px; }
-  body.panel-open .foot, body.drawer-open .foot { display: none; }
+  body:has(#tips:not([hidden])) .foot, body.panel-open .foot, body.drawer-open .foot { display: none; }
   .need small { margin-left: 0; }
   .row { grid-template-columns: 84px 1fr 40px; }
 }
