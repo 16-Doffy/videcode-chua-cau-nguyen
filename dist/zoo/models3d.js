@@ -116,7 +116,7 @@ const sizeOf = (obj) => poseBox(obj).getSize(new THREE.Vector3());
 const clipCache = new Map();
 function clipFor(id, gltf, want) {
   if (!want) return null;
-  const key = `${id}:${want}`;
+  const key = `${id}:${Array.isArray(want) ? want.join('-') : want}`;
   if (!clipCache.has(key)) {
     clipCache.set(key, Array.isArray(want)
       ? THREE.AnimationUtils.subclip(gltf.animations[0], key, Math.round(want[0] * 30), Math.round(want[1] * 30), 30)
@@ -134,26 +134,41 @@ export function makeAnimal(speciesId, size = 1) {
   const holder = new THREE.Group();
   holder.scale.setScalar(size);
   let phase = Math.random() * 6;
-  let real = null; // { model, gait, mixer, walk, idle, moving }
+  let real = null; // { model, gait, mixer, actions, currentAction, state }
   const api = {
     group: holder,
-    update(dt, moving) {
-      phase += dt * (moving ? 9 : 2);
+    update(dt, state = 'idle') {
+      const wantAct = typeof state === 'string' ? state : state ? 'walk' : 'idle';
+      phase += dt * (wantAct === 'run' ? 14 : wantAct === 'walk' ? 9 : 2);
       if (real) {
-        if (moving !== real.moving) {
-          real.moving = moving;
-          if (real.walk && real.idle) { const to = moving ? real.walk : real.idle; const from = moving ? real.idle : real.walk; to.reset().play(); from.crossFadeTo(to, 0.25, false); }
-          else if (real.walk) real.walk.paused = !moving;
+        if (wantAct !== real.state) {
+          real.state = wantAct;
+          const targetAction = real.actions[wantAct]
+            || (wantAct === 'run' ? real.actions.walk : null)
+            || ((wantAct === 'walk' || wantAct === 'run') ? (real.actions.walk || real.actions.idle) : (real.actions.idle || real.actions.walk));
+          if (targetAction && targetAction !== real.currentAction) {
+            targetAction.reset().play();
+            if (real.currentAction) real.currentAction.crossFadeTo(targetAction, 0.25, false);
+            real.currentAction = targetAction;
+          }
         }
         real.mixer?.update(dt);
-        // No walk clip: a small bob and rock so it does not slide like a statue.
-        if (!real.walk) { real.gait.position.y = moving ? Math.abs(Math.sin(phase)) * 0.05 : 0; real.gait.rotation.x = moving ? Math.sin(phase) * 0.03 : 0; }
+        const moving = wantAct === 'walk' || wantAct === 'run';
+        if (!real.actions.walk) {
+          const bob = wantAct === 'run' ? 0.08 : 0.05;
+          real.gait.position.y = moving ? Math.abs(Math.sin(phase)) * bob : 0;
+          real.gait.rotation.x = moving ? Math.sin(phase) * 0.03 : 0;
+        } else {
+          real.gait.position.y = 0;
+          real.gait.rotation.x = 0;
+        }
         return;
       }
+      const moving = wantAct === 'walk' || wantAct === 'run';
       const swing = moving ? Math.sin(phase) * 0.55 : 0;
       built.legs.forEach((l, i) => { l.rotation.x = (i % 2 === (i < 2 ? 0 : 1) ? swing : -swing); });
       if (built.waddle) built.group.rotation.z = moving ? Math.sin(phase) * 0.12 : 0;
-      if (built.head) built.head.rotation.x = moving ? 0 : Math.sin(phase * 0.5) * 0.12;
+      if (built.head) built.head.rotation.x = moving ? 0 : (wantAct === 'eat' ? -0.35 : Math.sin(phase * 0.5) * 0.12);
       if (built.tail) built.tail.rotation.y = Math.sin(phase * 1.5) * 0.4;
       built.group.position.y = moving ? Math.abs(Math.sin(phase)) * 0.04 : 0;
     },
@@ -173,17 +188,29 @@ export function makeAnimal(speciesId, size = 1) {
     drop.forEach((o) => o.parent.remove(o));
     model.rotation.y = spec.rotY ?? 0;
     const gait = new THREE.Group(); gait.add(model);
-    real = { model, gait, mixer: null, walk: null, idle: null, moving: false };
+    real = { model, gait, mixer: null, actions: {}, currentAction: null, state: 'idle' };
     if (gltf.animations?.length) {
       real.mixer = new THREE.AnimationMixer(model);
-      const walk = clipFor(speciesId, gltf, spec.walk); const idle = clipFor(speciesId, gltf, spec.idle);
-      if (walk) real.walk = real.mixer.clipAction(walk);
-      if (idle) real.idle = real.mixer.clipAction(idle);
-      const first = real.idle || real.walk;
-      if (first) first.play();
-      real.mixer.update(0);
-      if (first) first.time = Math.random() * first.getClip().duration;
-      if (real.walk && !real.idle) real.walk.paused = true;
+      const actionNames = ['idle', 'walk', 'run', 'eat', 'water', 'play', 'sleep'];
+      for (const act of actionNames) {
+        const clip = clipFor(speciesId, gltf, spec[act]);
+        if (clip) real.actions[act] = real.mixer.clipAction(clip);
+      }
+      if (!real.actions.walk && spec.walk) {
+        const clip = clipFor(speciesId, gltf, spec.walk);
+        if (clip) real.actions.walk = real.mixer.clipAction(clip);
+      }
+      if (!real.actions.idle && spec.idle) {
+        const clip = clipFor(speciesId, gltf, spec.idle);
+        if (clip) real.actions.idle = real.mixer.clipAction(clip);
+      }
+      const initial = real.actions.idle || real.actions.walk;
+      if (initial) {
+        initial.play();
+        real.currentAction = initial;
+        real.mixer.update(0);
+        initial.time = Math.random() * initial.getClip().duration;
+      }
     }
     // Fit to the species' height, centred on the spot, feet on the ground. Measured in the clip's pose, not the
     // rest pose: some rigs are scaled by their animation.

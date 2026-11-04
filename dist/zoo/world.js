@@ -138,22 +138,32 @@ export function createWorld(host, sim) {
   const growth = (a) => { const sp = SPECIES_BY_ID[a.species]; return 1.3 * (a.age >= sp.adult ? 1 : 0.5 + 0.5 * (a.age / sp.adult)); };
   const habOf = (a) => sim.habById(a.hab);
   function spotFor(v) {
-    const h = habOf(v.a); if (!h) return [v.model.group.position.x, v.model.group.position.z];
+    const h = habOf(v.a); if (!h) return { pos: [v.model.group.position.x, v.model.group.position.z], kind: 'idle' };
     // Now and then it heads for water or a toy; at night, for the shelter.
     const night = (sim.state.time % DAY_SECONDS) / DAY_SECONDS > 0.8;
-    const want = night ? ['shelter'] : Math.random() < 0.35 ? ['water', 'enrich'] : [];
+    const want = night ? ['shelter'] : Math.random() < 0.45 ? ['water', 'enrich', 'plant'] : [];
     const spots = h.items.filter((it) => want.includes(ITEMS[it.type].kind));
-    if (spots.length) { const it = spots[Math.floor(Math.random() * spots.length)]; return [it.x + (Math.random() - 0.5) * 1.5, it.z + (Math.random() - 0.5) * 1.5]; }
-    return randomInPoly(h.pts, 1.2);
+    if (spots.length) {
+      const it = spots[Math.floor(Math.random() * spots.length)];
+      return { pos: [it.x + (Math.random() - 0.5) * 1.5, it.z + (Math.random() - 0.5) * 1.5], kind: ITEMS[it.type].kind };
+    }
+    return { pos: randomInPoly(h.pts, 1.2), kind: Math.random() < 0.4 ? 'plant' : 'idle' };
   }
   function addAnimal(a) {
     const sp = SPECIES_BY_ID[a.species]; const model = makeAnimal(a.species, growth(a));
-    const v = { a, model, target: null, wait: Math.random() * 3, speed: 0.6 + sp.size * 0.35, loose: false, walker: null };
+    const v = { a, model, target: null, destKind: 'idle', act: 'idle', wait: Math.random() * 3, speed: 0.6 + sp.size * 0.35, loose: false, walker: null };
     model.group.userData.animal = a.id;
     animalViews.set(a.id, v); placeInHabitat(v);
     if (a.escaped) setEscaped(a.id, true);
   }
-  function placeInHabitat(v) { const h = habOf(v.a); v.loose = false; v.walker = null; const p = h ? randomInPoly(h.pts, 1.2) : [0, 0]; v.model.group.position.set(p[0], 0.06, p[1]); v.model.group.rotation.y = Math.random() * 6; v.target = null; scene.add(v.model.group); }
+  function placeInHabitat(v) {
+    const h = habOf(v.a); v.loose = false; v.walker = null;
+    const p = h ? randomInPoly(h.pts, 1.2) : [0, 0];
+    v.model.group.position.set(p[0], 0.06, p[1]);
+    v.model.group.rotation.y = Math.random() * 6;
+    v.target = null; v.act = 'idle';
+    scene.add(v.model.group);
+  }
   function removeAnimal(id) { const v = animalViews.get(id); if (v) { scene.remove(v.model.group); animalViews.delete(id); } }
   function moveAnimal(a) { const v = animalViews.get(a.id); if (v) { v.a = a; placeInHabitat(v); } }
   function setEscaped(id, loose) {
@@ -296,16 +306,38 @@ export function createWorld(host, sim) {
     const speed = sim.state.speed; const animDt = dt * Math.max(speed, 0.0001) ** 0.5;
     moveCamera(dt);
     for (const v of animalViews.values()) {
-      const g = v.model.group; let moving = false;
-      if (v.loose && v.walker) { walkGraph(v.walker, animDt, v.speed * 1.6); moving = true; }
-      else if (v.wait > 0) { v.wait -= animDt; }
-      else {
-        if (!v.target) v.target = spotFor(v);
+      const g = v.model.group; let act = 'idle';
+      if (v.loose && v.walker) {
+        walkGraph(v.walker, animDt, v.speed * 1.6);
+        act = 'run';
+      } else if (v.wait > 0) {
+        v.wait -= animDt;
+        act = v.act || 'idle';
+      } else {
+        if (!v.target) {
+          const s = spotFor(v);
+          v.target = s.pos;
+          v.destKind = s.kind;
+        }
         const dx = v.target[0] - g.position.x; const dz = v.target[1] - g.position.z; const d = Math.hypot(dx, dz);
-        if (d < 0.2) { v.wait = 1.5 + Math.random() * 5; v.target = null; }
-        else { const step = Math.min(d, v.speed * animDt * (v.a.welfare > 40 && !v.a.sick ? 1 : 0.5)); g.position.x += (dx / d) * step; g.position.z += (dz / d) * step; const ang = Math.atan2(dx, dz); g.rotation.y += ((ang - g.rotation.y + Math.PI * 3) % (Math.PI * 2) - Math.PI) * Math.min(1, animDt * 6); moving = true; }
+        if (d < 0.25) {
+          v.wait = 2.0 + Math.random() * 5;
+          v.target = null;
+          if (v.destKind === 'water') v.act = 'water';
+          else if (v.destKind === 'plant') v.act = 'eat';
+          else if (v.destKind === 'enrich') v.act = 'play';
+          else if (v.destKind === 'shelter') v.act = 'sleep';
+          else v.act = 'idle';
+          act = v.act;
+        } else {
+          const step = Math.min(d, v.speed * animDt * (v.a.welfare > 40 && !v.a.sick ? 1 : 0.5));
+          g.position.x += (dx / d) * step; g.position.z += (dz / d) * step;
+          const ang = Math.atan2(dx, dz);
+          g.rotation.y += ((ang - g.rotation.y + Math.PI * 3) % (Math.PI * 2) - Math.PI) * Math.min(1, animDt * 6);
+          act = 'walk';
+        }
       }
-      v.model.update(animDt, moving);
+      v.model.update(animDt, act);
       if (selected?.kind === 'animal' && selected.id === v.a.id) { ring.position.set(g.position.x, 0.15, g.position.z); ring.scale.setScalar(Math.max(0.8, g.scale.x)); }
     }
     syncGuests(dt); syncStaff();

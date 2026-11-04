@@ -3,51 +3,71 @@
     "file": "penguin.glb",
     "height": 0.95,
     "walk": "Walk",
-    "idle": "Iddle"
+    "idle": "Iddle",
+    "water": "Slide",
+    "play": "Slide",
+    "eat": "Bite"
   },
   "zebra": {
     "file": "zebra.glb",
     "height": 1.75,
     "walk": "Take 001_3",
-    "idle": "Take 001_2"
+    "idle": "Take 001_2",
+    "run": "Take 001_4",
+    "eat": "Take 001_1",
+    "play": "Take 001"
   },
   "redpanda": {
     "file": "redpanda.glb",
     "height": 0.45,
-    "walk": "Armature|ArmatureAction"
+    "walk": "Armature|ArmatureAction",
+    "idle": [0, 0.4],
+    "eat": [0, 0.5],
+    "play": "Armature|ArmatureAction"
   },
   "giraffe": {
     "file": "giraffe.glb",
     "height": 4.2,
-    "idle": "Giraffe ArmatureAction"
+    "idle": "Giraffe ArmatureAction",
+    "walk": "Giraffe ArmatureAction",
+    "eat": [0, 2.0],
+    "play": [2.0, 4.0]
   },
   "bear": {
     "file": "bear.glb",
     "height": 1.6,
-    "idle": "metarig|metarigAction"
+    "idle": [0, 3.5],
+    "walk": [3.5, 8.0],
+    "eat": [0, 3.0],
+    "play": [4.0, 8.0]
   },
   "lion": {
     "file": "lion.glb",
     "height": 1.5,
-    "walk": [
-      10.8,
-      12
-    ],
-    "idle": [
-      0,
-      1.5
-    ]
+    "walk": [10.8, 12.0],
+    "idle": [0, 1.5],
+    "run": [12.0, 12.6],
+    "eat": [7.8, 9.8],
+    "play": [3.8, 5.8],
+    "water": [1.5, 2.5]
   },
   "panda": {
     "file": "panda.glb",
     "height": 1.25,
-    "idle": "Take 001"
+    "idle": [0, 2.5],
+    "walk": [2.5, 5.0],
+    "eat": [0, 2.5],
+    "play": [2.5, 5.0]
   },
   "elephant": {
     "file": "elephant.glb",
     "height": 2.3,
     "walk": "Elephant_Walk",
     "idle": "Elephant_Idle",
+    "run": "Elephant_Run",
+    "water": "Elephant_Water",
+    "play": "Elephant_Attack",
+    "eat": "Elephant_Water",
     "hideMaterial": "ring_nofade_ADD"
   }
 }
