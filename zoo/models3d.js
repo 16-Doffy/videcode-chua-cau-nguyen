@@ -265,6 +265,36 @@ export function toyBall(color = 0xe94b5b, r = 0.3) { return at(sphere(r, color, 
 export function itemModel(type, biome, waterColor, w = 1, d = 1) {
   const g = new THREE.Group();
   if (type === 'pool') { const p = pool(w - 0.1, d - 0.1, waterColor); g.add(p); g.add(at(box(w, 0.05, d, 0x8d7a5a), 0, 0.02, 0)); }
+  if (type === 'trough_water') {
+    g.add(at(box(w, 0.45, d, 0x7c7365), 0, 0.22, 0));
+    const waterPlane = at(box(w - 0.25, 0.06, d - 0.25, 0x4f9fc4), 0, 0.42, 0);
+    waterPlane.material = new THREE.MeshStandardMaterial({ color: 0x4f9fc4, roughness: 0.1, transparent: true, opacity: 0.88 });
+    g.add(waterPlane);
+  }
+  if (type === 'feeder_herb') {
+    for (const x of [-w * 0.38, w * 0.38]) for (const z of [-d * 0.35, d * 0.35]) g.add(at(cyl(0.06, 0.06, 0.65, 0x6b4a2b, 6), x, 0.32, z));
+    g.add(at(box(w, 0.35, d, 0x8a5a32), 0, 0.58, 0));
+    g.add(at(box(w - 0.2, 0.22, d - 0.2, 0x8fb84a), 0, 0.72, 0)); // fresh green hay
+  }
+  if (type === 'feeder_carn') {
+    g.add(at(box(w, 0.16, d, 0x56606a), 0, 0.08, 0));
+    for (const [x, z] of [[-0.35, 0], [0.35, 0.1], [0, -0.15]]) {
+      g.add(at(box(0.38, 0.18, 0.28, 0xc0392b), x, 0.22, z));
+      g.add(at(box(0.14, 0.2, 0.14, 0xf5f5f5), x + 0.16, 0.22, z));
+    }
+  }
+  if (type === 'donation_box') {
+    g.add(at(box(0.65, 0.95, 0.55, 0x7a5232), 0, 0.48, 0));
+    g.add(at(box(0.72, 0.12, 0.62, 0x2f6b3a), 0, 0.98, 0));
+    g.add(at(box(0.24, 0.03, 0.05, 0xf1c40f), 0, 1.05, 0));
+    g.add(at(box(0.35, 0.35, 0.03, 0xf5ecd8), 0, 0.62, 0.29));
+  }
+  if (type === 'speaker_edu') {
+    g.add(at(cyl(0.05, 0.06, 2.0, 0x333333, 8), 0, 1.0, 0));
+    const horn = at(new THREE.ConeGeometry(0.2, 0.38, 8), 0, 1.9, 0.14);
+    horn.rotation.x = Math.PI / 2; horn.material = mat(0x56606a);
+    g.add(horn);
+  }
   if (type === 'mud') { const m = at(cyl(0.95, 0.95, 0.06, 0x6b4a2b, 10), 0, 0.05, 0); m.scale.set(w / 2, 1, d / 2); g.add(m); }
   if (type === 'plant') {
     const t = { savanna: acacia, bamboo, forest: pine, polar: iceBlock }[biome]();

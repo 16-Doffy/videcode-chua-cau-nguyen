@@ -72,7 +72,13 @@ export function createUI({ sim, world, onReset, onShowcase }) {
       <p class="note">${status}</p>
       ${compatPairs.length ? `<div class="habitat-banner good">🤝 <b>Cộng sinh phong phú loài:</b> ${compatPairs.join(', ')} (+15% hòa đồng)</div>` : ''}
       ${hasPredator && hasHerbivore ? '<div class="habitat-banner warn">⚠️ <b>Cảnh báo nguy hiểm:</b> Thú săn mồi sống cùng thú ăn cỏ làm chúng hoảng sợ!</div>' : ''}
-      <div class="actions"><button data-act="open" data-to="build">Đặt đồ</button><button data-act="open" data-to="paint">Tô địa hình</button><button data-act="open" data-to="market">Mua thú</button><button class="soft" data-act="open-zoopedia" ${uniqueSpecies[0] ? `data-sp="${uniqueSpecies[0]}"` : ''}>📖 Zoopedia</button><button class="soft" data-act="care">Tự chăm · ${price(40 + 15 * n)}</button></div>
+      <div class="actions">
+        <button class="primary" data-act="call-keeper">🔔 Gọi người chăm sóc (Call Keeper)</button>
+        <button data-act="open" data-to="build">Đặt đồ</button>
+        <button data-act="open" data-to="paint">Tô địa hình</button>
+        <button data-act="open" data-to="market">Mua thú</button>
+        <button class="soft" data-act="open-zoopedia" ${uniqueSpecies[0] ? `data-sp="${uniqueSpecies[0]}"` : ''}>📖 Zoopedia</button>
+      </div>
       <h3>Hàng rào</h3>
       <p class="note">${BARRIERS[h.barrier].name}${needBarrier > h.barrier ? ` · <span class="warn">thú ở đây cần ${BARRIERS[needBarrier].name.toLowerCase()}, chúng có thể xổng chuồng</span>` : ''}</p>
       ${next ? `<button class="soft" data-act="barrier" ${next.research && !sim.done(next.research) ? 'disabled' : ''}>Nâng lên ${next.name.toLowerCase()} · ${price(sim.actions.upgradeCost(h.id))}${next.research && !sim.done(next.research) ? ' (cần nghiên cứu)' : ''}</button>` : ''}
@@ -82,6 +88,9 @@ export function createUI({ sim, world, onReset, onShowcase }) {
       <dl class="facts">
         <dt>Đất trống</dt><dd>${Math.round(st.land)} m²${st.landNeed ? ` / thú cần ${Math.round(st.landNeed)} m²` : ''}</dd>
         <dt>Mặt nước</dt><dd>${Math.round((st.water / st.area) * 100)}% (${Math.round(st.water)} m²)</dd>
+        <dt>Máng ăn</dt><dd>${st.feeders ? `${st.feeders} máng` : 'chưa có'}</dd>
+        <dt>Thùng quyên góp</dt><dd>${st.donationBoxes ? `${st.donationBoxes} thùng` : 'chưa có'}</dd>
+        <dt>Loa giáo dục</dt><dd>${st.speakers ? `${st.speakers} loa` : 'chưa có'}</dd>
         <dt>Cây</dt><dd>${esc(plants)}</dd>
         <dt>Nhà trú</dt><dd>${st.shelters ? `${st.shelters * 4} chỗ` : 'chưa có'}${st.shelterNeed ? ` / cần ${Math.ceil(st.shelterNeed)}` : ''}</dd>
         <dt>Đồ chơi</dt><dd>${esc(types)}</dd>
@@ -108,6 +117,8 @@ export function createUI({ sim, world, onReset, onShowcase }) {
       <div class="needs">${needs}</div>
       <label class="check"><input type="checkbox" data-act="contra" ${a.contraception ? 'checked' : ''}> Ngừa thai (không sinh con)</label>
       <div class="actions">
+        <button class="primary" data-act="call-keeper-animal" data-hab="${a.hab}">🔔 Gọi người chăm sóc (Call Keeper)</button>
+        <button class="soft" data-act="call-vet" data-id="${a.id}">🩺 Gọi bác sĩ thú y (Call Vet)</button>
         ${others.length ? `<label class="move">Chuyển sang <select data-act="move"><option value="">chọn chuồng…</option>${others.map((x) => `<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></label>` : ''}
         <button class="soft" data-act="open-zoopedia" data-sp="${sp.id}">📖 Tra cứu Zoopedia</button>
         <button class="soft" data-act="sell">${sp.cc ? `Chuyển vườn khác (+${Math.round(sp.cc * 0.4)} điểm)` : `Bán sang vườn khác (+${fmt(sp.price * 0.5)})`}</button>
@@ -369,7 +380,10 @@ export function createUI({ sim, world, onReset, onShowcase }) {
       case 'paint-type': ui.paintType = d.t; renderMode(); break;
       case 'brush': ui.brush = Number(d.r); break;
       case 'open': if (d.to === 'market' && sel) ui.marketHab = sel.id; openDrawer(d.to); return;
-      case 'care': A.careNow(sel.id); break;
+      case 'care':
+      case 'call-keeper': A.callKeeper(sel.id); break;
+      case 'call-keeper-animal': A.callKeeper(Number(d.hab)); break;
+      case 'call-vet': A.callVet(Number(d.id || sel.id)); break;
       case 'barrier': A.upgradeBarrier(sel.id); break;
       case 'board': A.buildBoard(sel.id); break;
       case 'remove-hab': if (ui.armRemove === sel.id) { A.removeHabitat(sel.id); ui.armRemove = null; if (!sim.habById(sel.id)) ui.sel = null; } else { ui.armRemove = sel.id; setTimeout(() => { ui.armRemove = null; }, 3000); } break;
