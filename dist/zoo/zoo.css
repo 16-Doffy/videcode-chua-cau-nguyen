@@ -98,6 +98,8 @@ button[disabled] { opacity: .45; cursor: not-allowed; }
 
 .panel button.pick { display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 8px; text-align: left; background: #fff; color: var(--ink); border: 1px solid var(--line); border-radius: 12px; padding: 9px 12px; font-weight: 400; }
 .panel button.pick:hover { border-color: var(--leaf); background: #fff; }
+button.primary { background: var(--leaf); color: #fff; font-weight: 700; box-shadow: 0 4px 12px rgba(47,107,58,.25); border: 0; }
+button.primary:hover { background: var(--leaf-dark); }
 .pick small { color: var(--muted); font-size: 12px; }
 .mood { font-size: 12px; font-weight: 700; white-space: nowrap; }
 .mood.good { color: #1f7a4c; } .mood.mid { color: #9a6a00; } .mood.bad { color: var(--bad); }

@@ -13,9 +13,9 @@ const pick = (list) => list[Math.floor(Math.random() * list.length)];
 const N = Math.round((MAP.half * 2) / MAP.cell); // terrain cells a side
 const snap = (v) => Math.round(v * 2) / 2;
 const keyOf = (p) => `${Math.round(p[0] * 10) / 10},${Math.round(p[1] * 10) / 10}`;
-export const NEED_LABELS = { food: 'Thức ăn', water: 'Nước uống', social: 'Bầy đàn', habitat: 'Môi trường sống', shelter: 'Chỗ trú', enrich: 'Vui chơi', health: 'Sức khỏe', clean: 'Vệ sinh' };
+export const NEED_LABELS = { food: 'Thức ăn', water: 'Nước uống', social: 'Bầy đàn', habitat: 'Môi trường sống', shelter: 'Chỗ trú', enrich: 'Vui chơi', health: 'Sức khỏe', clean: 'Vệ sinh', stress: 'Độ yên tĩnh' };
 export const GUEST_NEEDS = { hunger: 'Đói', thirst: 'Khát', toilet: 'Cần vệ sinh', energy: 'Sức lực' };
-const NEED_WEIGHTS = { food: 0.17, water: 0.12, social: 0.14, habitat: 0.17, shelter: 0.1, enrich: 0.12, health: 0.1, clean: 0.08 };
+const NEED_WEIGHTS = { food: 0.16, water: 0.12, social: 0.13, habitat: 0.15, shelter: 0.10, enrich: 0.11, health: 0.09, clean: 0.07, stress: 0.07 };
 
 export function freshState() {
   return {
@@ -124,7 +124,11 @@ export function createSim({ admin = false, emit = () => {} } = {}) {
 
   function habitatStats(h) {
     const hi = hInfo(h);
-    const s = { ...hi, water: 0, shelterArea: 0, shelters: 0, plants: {}, plantTotal: 0, rocks: 0, types: new Set(), animals: animalsIn(h.id), landNeed: 0, shelterNeed: 0 };
+    const s = {
+      ...hi, water: 0, shelterArea: 0, shelters: 0, plants: {}, plantTotal: 0, rocks: 0,
+      feeders: 0, donationBoxes: 0, speakers: 0,
+      types: new Set(), animals: animalsIn(h.id), landNeed: 0, shelterNeed: 0
+    };
     for (const it of h.items) {
       const def = ITEMS[it.type]; const a = def.w * def.d;
       if (def.kind === 'water') s.water += a;
@@ -132,6 +136,9 @@ export function createSim({ admin = false, emit = () => {} } = {}) {
       if (def.kind === 'plant') { s.plants[def.plant] = (s.plants[def.plant] || 0) + 1; s.plantTotal += 1; }
       if (def.kind === 'deco') s.rocks += 1;
       if (def.kind === 'enrich') s.types.add(it.type);
+      if (def.kind === 'feeder') s.feeders += 1;
+      if (def.kind === 'donation') s.donationBoxes += 1;
+      if (def.kind === 'speaker') s.speakers += 1;
     }
     s.land = Math.max(0, hi.area - s.water - s.shelterArea);
     for (const a of s.animals) { const sp = SPECIES_BY_ID[a.species]; const k = isAdult(a) ? 1 : 0.5; s.landNeed += sp.area * k; s.shelterNeed += sp.shelter * k; }
@@ -175,11 +182,43 @@ export function createSim({ admin = false, emit = () => {} } = {}) {
     if (shelter < 0.8) why.shelter = st.shelters ? 'Nhà trú chật, xây thêm' : 'Chưa có nhà trú';
     const liked = sp.likes.filter((t) => st.types.has(t)).length; const enrich = clamp(liked / sp.enrich, 0, 1);
     if (enrich < 1) why.enrich = `Thích: ${sp.likes.map((t) => ITEMS[t].name.toLowerCase()).join(', ')}`;
-    const needs = { food: h.food, water: h.water, social: social * 100, habitat: habitat * 100, shelter: shelter * 100, enrich: enrich * 100, health: a.health, clean: h.clean };
-    if (h.food < 40) why.food = info.covered.has(h.id) ? 'Đang chờ nhân viên cho ăn' : st.gate ? 'Không có nhân viên chăm chuồng này' : 'Chuồng chưa có lối vào: làm lối đi sát rào';
-    if (h.water < 40) why.water = 'Cần nước';
-    if (a.sick) why.health = state.staff.vet ? 'Đang ốm, bác sĩ sẽ chữa' : 'Đang ốm: thuê bác sĩ thú y';
-    if (h.clean < 40) why.clean = 'Chuồng bẩn';
+
+    // Planet Zoo Stress & Crowd Noise:
+    let stress = 100;
+    const isOneWayGlass = h.barrier === 4;
+    const coverPoints = st.shelters * 3 + st.rocks * 0.8 + st.plantTotal * 0.4;
+    if (isOneWayGlass) {
+      stress = 100;
+    } else {
+      const nearGuests = state.visitors.filter((v) => distToPoly([v.x, v.z], h.pts) < 7).length;
+      const sensitivity = sp.stressSensitivity || 0.4;
+      if (nearGuests > 3) {
+        const reduction = Math.max(0, (nearGuests - 3) * 4 * sensitivity - coverPoints * 2);
+        stress = clamp(100 - reduction, 20, 100);
+        if (stress < 65) {
+          why.stress = `Bị căng thẳng do ${nearGuests} khách đứng gần: nâng rào lên Kính 1 chiều hoặc thêm cây cối, nhà trú để ẩn nấp.`;
+        }
+      }
+    }
+
+    const feederBonus = st.feeders > 0 ? 10 : 0;
+    const foodScore = clamp(h.food + feederBonus, 0, 100);
+    const waterScore = clamp(h.water + (st.water > 0 ? 10 : 0), 0, 100);
+    const needs = {
+      food: foodScore,
+      water: waterScore,
+      social: social * 100,
+      habitat: habitat * 100,
+      shelter: shelter * 100,
+      enrich: enrich * 100,
+      health: a.health,
+      clean: h.clean,
+      stress: stress
+    };
+    if (h.food < 40) why.food = info.covered.has(h.id) ? 'Đang chờ nhân viên cho ăn' : st.gate ? 'Không có nhân viên chăm chuồng này: hãy bấm Gọi người chăm sóc' : 'Chuồng chưa có lối vào: làm lối đi sát rào';
+    if (h.water < 40) why.water = 'Cần nước: đặt thêm máng nước hoặc hồ nước';
+    if (a.sick) why.health = state.staff.vet ? 'Đang ốm, bác sĩ sẽ chữa' : 'Đang ốm: thuê bác sĩ thú y hoặc bấm Gọi bác sĩ';
+    if (h.clean < 40) why.clean = 'Chuồng bẩn: bấm Gọi người chăm sóc để dọn dẹp';
     return { needs, why };
   }
 
@@ -298,9 +337,16 @@ export function createSim({ admin = false, emit = () => {} } = {}) {
         const name = SPECIES_BY_ID[star.species].name;
         v.happy += clamp((w - 45) / 55, -1, 1) * 9 + Math.min(4, SPECIES_BY_ID[star.species].appeal / 5);
         v.thought = w >= 65 ? `${name} trông vui quá!` : `${name} trông tội nghiệp quá.`;
-        if (Math.random() < (h.board ? 0.55 : 0.15) * (v.happy / 100)) {
-          const gift = Math.round((h.board ? 6 : 3) * (0.5 + v.happy / 100)); state.money += gift; state.ledger.today.donations += gift; incomeAcc += gift; v.spent += gift;
-          if (h.board) v.thought = `Học được nhiều điều về ${name.toLowerCase()}, mình góp chút tiền.`;
+        const hasDonation = (st.donationBoxes || 0) > 0;
+        const hasSpeaker = (st.speakers || 0) > 0;
+        const chance = (h.board ? 0.5 : 0.15) + (hasDonation ? 0.3 : 0) + (hasSpeaker ? 0.15 : 0);
+        if (Math.random() < Math.min(0.9, chance * (v.happy / 100))) {
+          const baseGift = (h.board ? 6 : 3) + (hasDonation ? 5 : 0) + (hasSpeaker ? 4 : 0);
+          const gift = Math.round(baseGift * (0.5 + v.happy / 100));
+          state.money += gift; state.ledger.today.donations += gift; incomeAcc += gift; v.spent += gift;
+          if (hasDonation) v.thought = `Thả ${gift} xu vào thùng quyên góp ủng hộ ${name.toLowerCase()}!`;
+          else if (hasSpeaker) v.thought = `Nghe loa thuyết minh về ${name.toLowerCase()} hay quá, mình góp chút tiền.`;
+          else if (h.board) v.thought = `Học được nhiều điều về ${name.toLowerCase()}, mình góp chút tiền.`;
         }
       }
       for (const f of state.facilities) {
@@ -568,7 +614,27 @@ export function createSim({ admin = false, emit = () => {} } = {}) {
       if (!hInfo(h).gate) { toast('Bảng giáo dục đặt cạnh lối đi: làm lối đi tới sát chuồng trước.', 'warn'); return; }
       if (!spend(BOARD_COST)) return; h.board = true; emit('habitat', { id }); toast('Đã dựng bảng giáo dục: khách hiểu thêm về thú và quyên góp nhiều hơn.', 'good');
     },
-    careNow(id) { const h = habById(id); const n = animalsIn(id).length; if (!spend(40 + 15 * n, 'upkeep')) return; h.food = 100; h.water = 100; h.clean = 100; toast(`Đã tự tay chăm ${h.name.toLowerCase()}.`, 'good'); },
+    callKeeper(id) {
+      const h = habById(id); if (!h) return;
+      const n = animalsIn(id).length;
+      const free = state.staff.keeper > 0;
+      const cost = free ? 0 : 40 + 15 * n;
+      if (!free && !spend(cost, 'upkeep')) return;
+      h.food = 100; h.water = 100; h.clean = 100;
+      emit('keeper', { hab: id });
+      toast(`🔔 Đã gọi người chăm sóc tới ${h.name}! Thức ăn, nước và chuồng đã được chăm sóc.${free ? ' (Miễn phí vì đã thuê nhân viên)' : ` (Phí khẩn cấp: ${cost} xu)`}`, 'good');
+    },
+    careNow(id) { actions.callKeeper(id); },
+    callVet(animalId) {
+      const a = state.animals.find((x) => x.id === animalId); if (!a) return;
+      const sp = SPECIES_BY_ID[a.species];
+      const free = state.staff.vet > 0;
+      const cost = free ? 0 : 80;
+      if (!free && !spend(cost, 'upkeep')) return;
+      a.sick = false;
+      a.health = clamp(a.health + 35, 0, 100);
+      toast(`🩺 Bác sĩ thú y đã khám và điều trị kịp thời cho ${a.name} (${sp.name})!${free ? ' (Miễn phí)' : ` (Phí khẩn cấp: ${cost} xu)`}`, 'good');
+    },
     canPlace: (hid, type, x, z) => itemFits(habById(hid), type, x, z),
     placeItem(hid, type, x, z, rot = 0) {
       const h = habById(hid); const def = ITEMS[type];

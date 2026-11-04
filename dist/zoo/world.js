@@ -97,12 +97,19 @@ export function createWorld(host, sim) {
     const old = habViews.get(h.id); if (old) scene.remove(old.root);
     const root = new THREE.Group(); scene.add(root); const view = { root, items: new Map() }; habViews.set(h.id, view);
     const bar = BARRIERS[h.barrier]; const postMat = mat(bar.post); const railMat = mat(bar.rail);
-    const rails = h.barrier === 3 ? [0.4, 1.0, 1.6, 2.2, 2.55] : h.barrier === 2 ? [0.5, 1.1, 1.7, 1.95] : [0.55, 1.0];
+    const rails = h.barrier === 4 ? [0.4, 1.2, 2.0, 2.7] : h.barrier === 3 ? [0.4, 1.0, 1.6, 2.2, 2.55] : h.barrier === 2 ? [0.5, 1.1, 1.7, 1.95] : [0.55, 1.0];
     const gateAt = sim.hInfo(h).gate?.point;
     for (const [a, b] of edges(h.pts)) {
       const A = v3(a); const B = v3(b); const len = A.distanceTo(B); const ang = Math.atan2(B.x - A.x, B.z - A.z); const steps = Math.max(1, Math.round(len / 1.6));
       for (let k = 0; k <= steps; k++) { const p = A.clone().lerp(B, k / steps); const post = new THREE.Mesh(new THREE.BoxGeometry(0.18, bar.height, 0.18), postMat); post.position.set(p.x, bar.height / 2, p.z); post.castShadow = true; root.add(post); }
       for (const y of rails) { const r = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, len), railMat); r.position.set((A.x + B.x) / 2, y, (A.z + B.z) / 2); r.rotation.y = ang; root.add(r); }
+      if (bar.glass) {
+        const glassMat = new THREE.MeshStandardMaterial({ color: 0x8ecae6, roughness: 0.05, metalness: 0.15, transparent: true, opacity: 0.45, depthWrite: false });
+        const glass = new THREE.Mesh(new THREE.BoxGeometry(0.06, bar.height - 0.2, len), glassMat);
+        glass.position.set((A.x + B.x) / 2, bar.height / 2, (A.z + B.z) / 2);
+        glass.rotation.y = ang;
+        root.add(glass);
+      }
     }
     if (gateAt) {
       // A keeper gate: two tall posts where the fence meets the path; the education board beside it.
@@ -139,15 +146,49 @@ export function createWorld(host, sim) {
   const habOf = (a) => sim.habById(a.hab);
   function spotFor(v) {
     const h = habOf(v.a); if (!h) return { pos: [v.model.group.position.x, v.model.group.position.z], kind: 'idle' };
-    // Now and then it heads for water or a toy; at night, for the shelter.
     const night = (sim.state.time % DAY_SECONDS) / DAY_SECONDS > 0.8;
-    const want = night ? ['shelter'] : Math.random() < 0.45 ? ['water', 'enrich', 'plant'] : [];
-    const spots = h.items.filter((it) => want.includes(ITEMS[it.type].kind));
-    if (spots.length) {
-      const it = spots[Math.floor(Math.random() * spots.length)];
-      return { pos: [it.x + (Math.random() - 0.5) * 1.5, it.z + (Math.random() - 0.5) * 1.5], kind: ITEMS[it.type].kind };
+    if (night) {
+      const shelters = h.items.filter((it) => ITEMS[it.type]?.kind === 'shelter');
+      if (shelters.length) {
+        const it = shelters[Math.floor(Math.random() * shelters.length)];
+        return { pos: [it.x + (Math.random() - 0.5) * 1.2, it.z + (Math.random() - 0.5) * 1.2], kind: 'shelter' };
+      }
     }
-    return { pos: randomInPoly(h.pts, 1.2), kind: Math.random() < 0.4 ? 'plant' : 'idle' };
+    const needs = v.a.needs || {};
+    // FSM: Hungry -> seek feeder or plants
+    if (needs.food < 45 || Math.random() < 0.28) {
+      const feeders = h.items.filter((it) => {
+        const k = ITEMS[it.type]?.kind;
+        return k === 'feeder' || it.type === 'feeder' || it.type === 'hayball';
+      });
+      if (feeders.length) {
+        const it = feeders[Math.floor(Math.random() * feeders.length)];
+        return { pos: [it.x + (Math.random() - 0.5) * 1.2, it.z + (Math.random() - 0.5) * 1.2], kind: 'plant' };
+      }
+      const plants = h.items.filter((it) => ITEMS[it.type]?.kind === 'plant');
+      if (plants.length && Math.random() < 0.5) {
+        const it = plants[Math.floor(Math.random() * plants.length)];
+        return { pos: [it.x + (Math.random() - 0.5) * 1.2, it.z + (Math.random() - 0.5) * 1.2], kind: 'plant' };
+      }
+    }
+    // FSM: Thirsty -> seek water trough or pool
+    if (needs.water < 45 || Math.random() < 0.28) {
+      const waters = h.items.filter((it) => ITEMS[it.type]?.kind === 'water');
+      if (waters.length) {
+        const it = waters[Math.floor(Math.random() * waters.length)];
+        return { pos: [it.x + (Math.random() - 0.5) * 1.5, it.z + (Math.random() - 0.5) * 1.5], kind: 'water' };
+      }
+    }
+    // FSM: Bored -> seek enrichment toy
+    if (needs.enrich < 55 || Math.random() < 0.3) {
+      const toys = h.items.filter((it) => ITEMS[it.type]?.kind === 'enrich');
+      if (toys.length) {
+        const it = toys[Math.floor(Math.random() * toys.length)];
+        return { pos: [it.x + (Math.random() - 0.5) * 1.2, it.z + (Math.random() - 0.5) * 1.2], kind: 'enrich' };
+      }
+    }
+    // FSM: Wander inside habitat
+    return { pos: randomInPoly(h.pts, 1.2), kind: Math.random() < 0.35 ? 'plant' : 'idle' };
   }
   function addAnimal(a) {
     const sp = SPECIES_BY_ID[a.species]; const model = makeAnimal(a.species, growth(a));
